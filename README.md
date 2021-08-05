@@ -1,0 +1,2 @@
+# ts-dag-eth
+A TypeScript implementation of the DAG interface for [Ethereum IPLD types](https://github.com/ipld/ipld/tree/master/specs/codecs/dag-eth) for use with [multiformats](https://github.com/multiformats/js-multiformats) or via the higher-level `Block` abstraction in [@ipld/block](https://github.com/ipld/js-block).
