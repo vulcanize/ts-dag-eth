@@ -22,6 +22,8 @@
   },
   "homepage": "https://github.com/vulcanize/ts-dag-eth#readme",
   "dependencies": {
+    "ethereumjs-util": "^7.1.0",
+    "merkle-patricia-tree": "^4.2.1",
     "multiformats": "^9.4.6",
     "web3-core": "^1.5.2",
     "web3-eth": "^1.5.2",
