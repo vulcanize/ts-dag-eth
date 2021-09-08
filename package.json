@@ -4,7 +4,7 @@
   "description": "Ethereum DAG for IPLD",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha -r ts-node/register 'tests/**/*.ts'"
   },
   "repository": {
     "type": "git",
@@ -22,20 +22,29 @@
   },
   "homepage": "https://github.com/vulcanize/ts-dag-eth#readme",
   "dependencies": {
+    "bn.js": "^5.1.2",
     "ethereumjs-util": "^7.1.0",
     "merkle-patricia-tree": "^4.2.1",
+    "multicodec": "^3.2.1",
     "multiformats": "^9.4.6",
     "web3-core": "^1.5.2",
     "web3-eth": "^1.5.2",
     "web3-utils": "^1.5.2"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.21",
+    "@types/chai-subset": "^1.3.3",
+    "@types/mocha": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^4.29.3",
     "@typescript-eslint/parser": "^4.29.3",
+    "chai": "^4.3.4",
+    "chai-subset": "^1.6.0",
     "eslint": "^7.32.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-jest": "^24.4.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^5.1.0"
+    "eslint-plugin-promise": "^5.1.0",
+    "ts-node": "^10.2.1"
   }
 }
