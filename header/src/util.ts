@@ -31,7 +31,7 @@ export function prepare (node: any): Header {
   let baseFeePerGas: bigint
 
   if (node.ParentCID == null) {
-    throw new TypeError('Invalid eth-header form; node.parentHash is null/undefined')
+    throw new TypeError('Invalid eth-header form; node.ParentCID is null/undefined')
   } else if (typeof node.ParentCID === 'string') {
     parentCID = CID.parse(node.ParentCID)
   } else if (node.ParentCID instanceof Uint8Array) {
@@ -45,7 +45,7 @@ export function prepare (node: any): Header {
   }
 
   if (node.UnclesCID == null) {
-    throw new TypeError('Invalid eth-header form; node.parentHash is null/undefined')
+    throw new TypeError('Invalid eth-header form; node.UnclesCID is null/undefined')
   } else if (typeof node.UnclesCID === 'string') {
     unclesCID = CID.parse(node.UnclesCID)
   } else if (node.UnclesCID instanceof Uint8Array) {
