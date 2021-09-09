@@ -1,5 +1,6 @@
 import { CID } from 'multiformats/cid'
 import { Account } from './interface'
+import { arrayToBigInt, bufferToBigInt, hasOnlyProperties } from '../../util/src/util'
 
 const accountNodeProperties = ['Nonce', 'Balance', 'StorageRootCID', 'CodeCID']
 
@@ -20,7 +21,9 @@ export function prepare (node: any): Account {
   } else if (typeof node.Nonce === 'bigint') {
     nonce = node.Nonce
   } else if (node.Nonce instanceof Uint8Array) {
-    nonce = bufToBigInt(node.Nonce)
+    nonce = arrayToBigInt(node.Nonce)
+  } else if (node.Nonce instanceof Buffer) {
+    nonce = bufferToBigInt(node.Nonce)
   } else {
     throw new TypeError('Invalid eth-account-snapshop form; node.Nonce needs to be of type bigint')
   }
@@ -32,7 +35,9 @@ export function prepare (node: any): Account {
   } else if (typeof node.Balance === 'bigint') {
     balance = node.Balance
   } else if (node.Balance instanceof Uint8Array) {
-    balance = bufToBigInt(node.Balance)
+    balance = arrayToBigInt(node.Balance)
+  } else if (node.Balance instanceof Buffer) {
+    balance = bufferToBigInt(node.Balance)
   } else {
     throw new TypeError('Invalid eth-account-snapshop form; node.Balance needs to be of type bigint')
   }
@@ -101,21 +106,4 @@ export function validate (node: Account) {
   } else if (!CID.isCID(node.CodeCID)) {
     throw new TypeError('Invalid eth-account-snapshop form; node.CodeCID needs to be of type CID')
   }
-}
-
-function bufToBigInt (buf: Uint8Array): bigint {
-  const hex: string[] = []
-  const u8 = Uint8Array.from(buf)
-
-  u8.forEach(function (i) {
-    let h = i.toString(16)
-    if (h.length % 2) { h = '0' + h }
-    hex.push(h)
-  })
-
-  return BigInt('0x' + hex.join(''))
-}
-
-function hasOnlyProperties (node: any, properties: string[]): boolean {
-  return !Object.keys(node).some((p) => !properties.includes(p))
 }
