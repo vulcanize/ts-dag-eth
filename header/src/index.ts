@@ -14,21 +14,25 @@ export function encode (node: Header): ByteView<Header> {
   const ethBlockHeader = BlockHeader.fromHeaderData({
     parentHash: hashFromCID(node.ParentCID),
     uncleHash: hashFromCID(node.UnclesCID),
-    coinbase: '0x0',
+    coinbase: Buffer.from(node.Coinbase),
     stateRoot: hashFromCID((node.StateRootCID)),
     transactionsTrie: hashFromCID(node.TxRootCID),
     receiptTrie: hashFromCID(node.RctRootCID),
-    bloom: '0x0',
-    difficulty: '0x0',
-    number: '0x0',
-    gasLimit: '0x0',
-    gasUsed: '0x0',
-    timestamp: '0x0',
-    extraData: '0x0',
-    mixHash: '0x0',
-    nonce: '0x0',
-    baseFeePerGas: '0x0'
+    bloom: node.Bloom,
+    difficulty: node.Difficulty.toString(),
+    number: node.Number.toString(),
+    gasLimit: node.GasLimit.toString(),
+    gasUsed: node.GasUsed.toString(),
+    timestamp: node.Time,
+    extraData: node.Extra,
+    mixHash: node.MixDigest,
+    nonce: node.Nonce.toString()
   })
+  if (typeof node.BaseFee !== 'undefined') {
+    Object.defineProperty(ethBlockHeader, 'baseFeePerGas', {
+      value: node.BaseFee.toString()
+    })
+  }
   return ethBlockHeader.serialize()
 }
 
