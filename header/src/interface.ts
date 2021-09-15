@@ -1,20 +1,22 @@
 import { CID } from 'multiformats/cid'
+import * as BN from 'bn.js'
+import { Address } from 'ethereumjs-util'
 
 export interface Header {
     ParentCID: CID,
     UnclesCID: CID,
-    Coinbase: Uint8Array,
+    Coinbase: Address,
     StateRootCID: CID,
     TxRootCID: CID,
     RctRootCID: CID,
-    Bloom: Uint8Array,
-    Difficulty: bigint,
-    Number: bigint,
-    GasLimit: bigint,
-    GasUsed: bigint,
-    Time: number,
-    Extra: Uint8Array,
-    MixDigest: Uint8Array,
-    Nonce: bigint,
-    BaseFee?: bigint
+    Bloom: Buffer,
+    Difficulty: BN,
+    Number: BN,
+    GasLimit: BN,
+    GasUsed: BN,
+    Time: BN,
+    Extra: Buffer,
+    MixDigest: Buffer,
+    Nonce: Buffer,
+    BaseFee?: BN
 }
