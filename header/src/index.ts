@@ -1,6 +1,6 @@
 import { ByteView } from 'multiformats/codecs/interface'
 import { Header } from '../src/interface'
-import { bufferToBigInt, cidFromHash, hashFromCID } from '../../util/src/util'
+import { cidFromHash, hashFromCID } from '../../util/src/util'
 import { code as stateTrieCode } from '../../state_trie/src/index'
 import { code as txTrieCode } from '../../tx_trie/src/index'
 import { code as rctTrieCode } from '../../rct_trie/src/index'
@@ -14,23 +14,23 @@ export function encode (node: Header): ByteView<Header> {
   const ethBlockHeader = BlockHeader.fromHeaderData({
     parentHash: hashFromCID(node.ParentCID),
     uncleHash: hashFromCID(node.UnclesCID),
-    coinbase: Buffer.from(node.Coinbase),
+    coinbase: node.Coinbase,
     stateRoot: hashFromCID((node.StateRootCID)),
     transactionsTrie: hashFromCID(node.TxRootCID),
     receiptTrie: hashFromCID(node.RctRootCID),
     bloom: node.Bloom,
-    difficulty: node.Difficulty.toString(),
-    number: node.Number.toString(),
-    gasLimit: node.GasLimit.toString(),
-    gasUsed: node.GasUsed.toString(),
+    difficulty: node.Difficulty,
+    number: node.Number,
+    gasLimit: node.GasLimit,
+    gasUsed: node.GasUsed,
     timestamp: node.Time,
     extraData: node.Extra,
     mixHash: node.MixDigest,
-    nonce: node.Nonce.toString()
+    nonce: node.Nonce
   })
   if (typeof node.BaseFee !== 'undefined') {
     Object.defineProperty(ethBlockHeader, 'baseFeePerGas', {
-      value: node.BaseFee.toString()
+      value: node.BaseFee
     })
   }
   return ethBlockHeader.serialize()
@@ -39,22 +39,22 @@ export function encode (node: Header): ByteView<Header> {
 export function decode (bytes: ByteView<Header>): Header {
   const bytesBuffer = Buffer.from(bytes.valueOf())
   const ethHeader = BlockHeader.fromRLPSerializedHeader(bytesBuffer)
-  const dagHeader = {
+  const dagHeader: Header = {
     ParentCID: cidFromHash(code, ethHeader.parentHash),
     UnclesCID: cidFromHash(unclesCode, ethHeader.uncleHash),
-    Coinbase: ethHeader.coinbase.toBuffer(),
+    Coinbase: ethHeader.coinbase,
     StateRootCID: cidFromHash(stateTrieCode, ethHeader.stateRoot),
     TxRootCID: cidFromHash(txTrieCode, ethHeader.transactionsTrie),
     RctRootCID: cidFromHash(rctTrieCode, ethHeader.receiptTrie),
     Bloom: ethHeader.bloom,
-    Difficulty: BigInt(ethHeader.difficulty.toString()),
-    Number: BigInt(ethHeader.number.toString()),
-    GasLimit: BigInt(ethHeader.gasLimit.toString()),
-    GasUsed: BigInt(ethHeader.gasUsed.toString()),
-    Time: ethHeader.timestamp.toNumber(),
+    Difficulty: ethHeader.difficulty,
+    Number: ethHeader.number,
+    GasLimit: ethHeader.gasLimit,
+    GasUsed: ethHeader.gasUsed,
+    Time: ethHeader.timestamp,
     Extra: ethHeader.extraData,
     MixDigest: ethHeader.mixHash,
-    Nonce: bufferToBigInt(ethHeader.nonce)
+    Nonce: ethHeader.nonce
   }
   if (typeof ethHeader.baseFeePerGas !== 'undefined') {
     Object.defineProperty(dagHeader, 'BaseFee', {

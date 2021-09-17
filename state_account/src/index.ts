@@ -10,8 +10,8 @@ export const rawCode = 0x55
 
 export function encode (node: DAGAccount): ByteView<DAGAccount> {
   const account = EthAccount.fromAccountData({
-    nonce: node.Nonce.toString(),
-    balance: node.Balance.toString(),
+    nonce: node.Nonce,
+    balance: node.Balance,
     stateRoot: hashFromCID(node.StorageRootCID),
     codeHash: hashFromCID(node.CodeCID)
   })
@@ -22,8 +22,8 @@ export function decode (bytes: ByteView<DAGAccount>): DAGAccount {
   const bytesBuffer = Buffer.from(bytes.valueOf())
   const ethAccount = EthAccount.fromRlpSerializedAccount(bytesBuffer)
   return {
-    Nonce: BigInt(ethAccount.nonce.toString()),
-    Balance: BigInt(ethAccount.balance.toString()),
+    Nonce: ethAccount.nonce,
+    Balance: ethAccount.balance,
     StorageRootCID: cidFromHash(storageTrieCode, ethAccount.stateRoot),
     CodeCID: cidFromHash(rawCode, ethAccount.codeHash)
   }
