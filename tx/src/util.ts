@@ -1,305 +1,245 @@
-import { CID } from 'multiformats/cid'
 import { Transaction } from './interface'
-import { arrayToNumber, bufferToNumber, arrayToBigInt, bufferToBigInt, hasOnlyProperties } from '../../util/src/util'
-import { AccessListBuffer } from '@ethereumjs/tx'
+import { arrayToNumber, bufferToNumber, hasOnlyProperties } from '../../util/src/util'
+import BN from 'bn.js'
+import { Address } from 'ethereumjs-util'
+const toBuffer = require('typedarray-to-buffer')
 
 const txNodeProperties = ['TxType',
   'ChainID', 'AccountNonce', 'GasPrice',
   'GasTipCap', 'GasFeeCap', 'GasLimit', 'Recipient',
   'Amount', 'Data', 'AccessList', 'V', 'R', 'S']
 
-function prepareLegacyTx (node: any): Transaction {
-  let accountNonce: bigint
-  let gasPrice: bigint
-  let gasLimit: bigint
-  let receipient: Uint8Array | undefined
-  let amount: bigint
-  let data: Uint8Array
-  let v: bigint
-  let r: bigint
-  let s: bigint
+function prepareBaseFields (node: any, txType: number): Transaction {
+  let accountNonce: BN
+  let gasLimit: BN
+  let recipient: Address | undefined
+  let amount: BN
+  let data: Buffer
+  let v: BN
+  let r: BN
+  let s: BN
 
-  if (node.Nonce == null) {
-    throw new TypeError('Invalid eth-tx form; node.Nonce is null/undefined')
-  } else if (typeof node.Nonce === 'string' || typeof node.Nonce === 'bigint') {
-    accountNonce = BigInt(node.Nonce)
-  } else if (node.Nonce instanceof Uint8Array) {
-    accountNonce = arrayToBigInt(node.Nonce)
-  } else if (node.Nonce instanceof Buffer) {
-    accountNonce = bufferToBigInt(node.Nonce)
-  } else if (typeof node.Nonce === 'bigint') {
-    accountNonce = node.Nonce
+  if (node.AccountNonce == null) {
+    throw new TypeError('Invalid eth-tx form; node.AccountNonce is null/undefined')
+  } else if (typeof node.AccountNonce === 'string' || typeof node.AccountNonce === 'number' || node.AccountNonce instanceof Uint8Array ||
+    node.AccountNonce instanceof Buffer) {
+    accountNonce = new BN(node.AccountNonce, 10)
+  } else if (typeof node.AccountNonce === 'bigint') {
+    accountNonce = new BN(node.AccountNonce.toString(), 10)
   } else {
-    throw new TypeError('Invalid eth-tx form; node.Nonce needs to be of type bigint')
-  }
-
-  if (node.GasPrice == null) {
-    throw new TypeError('Invalid eth-tx legacy form; node.GasPrice is null/undefined')
-  } else if (typeof node.GasPrice === 'string' || typeof node.GasPrice === 'bigint') {
-    gasPrice = BigInt(node.GasPrice)
-  } else if (node.GasPrice instanceof Uint8Array) {
-    gasPrice = arrayToBigInt(node.GasPrice)
-  } else if (node.GasPrice instanceof Buffer) {
-    gasPrice = bufferToBigInt(node.GasPrice)
-  } else if (typeof node.GasPrice === 'bigint') {
-    gasPrice = node.GasPrice
-  } else {
-    throw new TypeError('Invalid eth-tx legacy form; node.GasPrice needs to be of type bigint')
+    throw new TypeError('Invalid eth-tx form; node.AccountNonce needs to be of type BN')
   }
 
   if (node.GasLimit == null) {
     throw new TypeError('Invalid eth-tx form; node.GasLimit is null/undefined')
-  } else if (typeof node.GasLimit === 'string' || typeof node.GasLimit === 'bigint') {
-    gasLimit = BigInt(node.GasLimit)
-  } else if (node.GasLimit instanceof Uint8Array) {
-    gasLimit = arrayToBigInt(node.GasLimit)
-  } else if (node.GasLimit instanceof Buffer) {
-    gasLimit = bufferToBigInt(node.GasLimit)
+  } else if (typeof node.GasLimit === 'string' || typeof node.GasLimit === 'number' || node.GasLimit instanceof Uint8Array ||
+    node.GasLimit instanceof Buffer) {
+    gasLimit = new BN(node.GasLimit, 10)
   } else if (typeof node.GasLimit === 'bigint') {
-    gasLimit = node.GasLimit
+    gasLimit = new BN(node.GasLimit.toString(), 10)
   } else {
-    throw new TypeError('Invalid eth-tx form; node.GasLimit needs to be of type bigint')
+    throw new TypeError('Invalid eth-tx form; node.GasLimit needs to be of type BN')
   }
 
   if (node.Recipient == null) {
-    receipient = undefined
+    recipient = undefined
   } else if (typeof node.Recipient === 'string') {
-    receipient = Uint8Array.from(Buffer.from(node.Recipient, 'hex'))
+    recipient = Address.fromString(node.Recipient)
   } else if (node.Recipient instanceof Uint8Array) {
-    receipient = node.Recipient
+    recipient = new Address(node.Recipient.buffer)
   } else if (node.Recipient instanceof Buffer) {
-    receipient = Uint8Array.from(node.Recipient)
+    recipient = new Address(node.Recipient)
   } else {
-    throw new TypeError('Invalid eth-tx form; node.Recipient needs to be of type Uint8Array')
+    throw new TypeError('Invalid eth-tx form; node.Recipient needs to be of type Address or undefined')
   }
 
   if (node.Value == null) {
     throw new TypeError('Invalid eth-tx form; node.Value is null/undefined')
-  } else if (typeof node.Value === 'string' || typeof node.Value === 'bigint') {
-    amount = BigInt(node.Value)
-  } else if (node.Value instanceof Uint8Array) {
-    amount = arrayToBigInt(node.Value)
-  } else if (node.Value instanceof Buffer) {
-    amount = bufferToBigInt(node.Value)
+  } else if (typeof node.Value === 'string' || typeof node.Value === 'number' || node.Value instanceof Uint8Array ||
+    node.Value instanceof Buffer) {
+    amount = new BN(node.Value, 10)
   } else if (typeof node.Value === 'bigint') {
-    amount = node.Value
+    amount = new BN(node.Value.toString(), 10)
   } else {
-    throw new TypeError('Invalid eth-tx form; node.Value needs to be of type bigint')
+    throw new TypeError('Invalid eth-tx form; node.Value needs to be of type BN')
   }
 
   if (node.Data == null) {
     throw new TypeError('Invalid eth-tx form; node.Data is null/undefined')
   } else if (typeof node.Data === 'string') {
-    data = Uint8Array.from(Buffer.from(node.Data, 'hex'))
+    data = Buffer.from(node.Data, 'hex')
   } else if (node.Data instanceof Uint8Array) {
-    data = node.Data
+    data = toBuffer(node.Data)
   } else if (node.Data instanceof Buffer) {
-    data = Uint8Array.from(node.Data)
+    data = node.Data
   } else {
-    throw new TypeError('Invalid eth-tx form; node.Data needs to be of type Uint8Array')
+    throw new TypeError('Invalid eth-tx form; node.Data needs to be of type Buffer')
+  }
+
+  if (node.V == null) {
+    throw new TypeError('Invalid eth-tx form; node.V is null/undefined')
+  } else if (typeof node.V === 'string' || typeof node.V === 'number' || node.V instanceof Uint8Array ||
+    node.V instanceof Buffer) {
+    v = new BN(node.V, 10)
+  } else if (typeof node.V === 'bigint') {
+    v = new BN(node.V.toString(), 10)
+  } else {
+    throw new TypeError('Invalid eth-tx form; node.V needs to be of type BN')
+  }
+
+  if (node.R == null) {
+    throw new TypeError('Invalid eth-tx form; node.R is null/undefined')
+  } else if (typeof node.R === 'string' || typeof node.R === 'number' || node.R instanceof Uint8Array ||
+    node.R instanceof Buffer) {
+    r = new BN(node.R, 10)
+  } else if (typeof node.R === 'bigint') {
+    r = new BN(node.R.toString(), 10)
+  } else {
+    throw new TypeError('Invalid eth-tx form; node.R needs to be of type BN')
+  }
+
+  if (node.S == null) {
+    throw new TypeError('Invalid eth-tx form; node.S is null/undefined')
+  } else if (typeof node.S === 'string' || typeof node.S === 'number' || node.S instanceof Uint8Array ||
+    node.S instanceof Buffer) {
+    s = new BN(node.S, 10)
+  } else if (typeof node.S === 'bigint') {
+    s = new BN(node.S.toString(), 10)
+  } else {
+    throw new TypeError('Invalid eth-tx form; node.S needs to be of type BN')
+  }
+
+  return {
+    TxType: txType,
+    AccountNonce: accountNonce,
+    GasLimit: gasLimit,
+    Recipient: recipient,
+    Amount: amount,
+    Data: data,
+    V: v,
+    R: r,
+    S: s
+  }
+}
+
+function prepareGasPrice (node: any): BN {
+  let gasPrice: BN
+
+  if (node.GasPrice == null) {
+    throw new TypeError('Invalid eth-tx form; node.GasPrice is null/undefined')
+  } else if (typeof node.GasPrice === 'string' || typeof node.GasPrice === 'number' || node.GasPrice instanceof Uint8Array ||
+    node.GasPrice instanceof Buffer) {
+    gasPrice = new BN(node.GasPrice, 10)
+  } else if (typeof node.GasPrice === 'bigint') {
+    gasPrice = new BN(node.GasPrice.toString(), 10)
+  } else {
+    throw new TypeError('Invalid eth-tx form; node.GasPrice needs to be of type BN')
+  }
+
+  return gasPrice
+}
+
+function prepareChainID (node: any): BN {
+  let chainID: BN
+
+  if (node.ChainID == null) {
+    throw new TypeError('Invalid eth-tx form; node.ChainID is null/undefined')
+  } else if (typeof node.ChainID === 'string' || typeof node.ChainID === 'number' || node.ChainID instanceof Uint8Array ||
+    node.ChainID instanceof Buffer) {
+    chainID = new BN(node.ChainID, 10)
+  } else if (typeof node.ChainID === 'bigint') {
+    chainID = new BN(node.ChainID.toString(), 10)
+  } else {
+    throw new TypeError('Invalid eth-tx form; node.ChainID needs to be of type BN')
+  }
+
+  return chainID
+}
+
+function prepareLegacyTx (node: any): Transaction {
+  const gasPrice = prepareGasPrice(node)
+  const baseTx = prepareBaseFields(node, 0)
+
+  return {
+    TxType: baseTx.TxType,
+    AccountNonce: baseTx.AccountNonce,
+    GasPrice: gasPrice,
+    GasLimit: baseTx.GasLimit,
+    Recipient: baseTx.Recipient,
+    Amount: baseTx.Amount,
+    Data: baseTx.Data,
+    V: baseTx.V,
+    R: baseTx.R,
+    S: baseTx.S
   }
 }
 
 function prepareAccessListTx (node: any): Transaction {
-  let chainID: bigint
-  let accountNonce: bigint
-  let gasPrice: bigint
-  let gasLimit: bigint
-  let receipient: Uint8Array | undefined
-  let amount: bigint
-  let data: Uint8Array
-  let accessList: AccessListBuffer
-  let v: bigint
-  let r: bigint
-  let s: bigint
+  const gasPrice = prepareGasPrice(node)
+  const chainID = prepareChainID(node)
+  const baseTx = prepareBaseFields(node, 1)
+  validateAccessList(node)
 
-  if (node.ChainID == null) {
-    throw new TypeError('Invalid eth-tx form; node.ChainID is null/undefined')
-  } else if (typeof node.ChainID === 'string' || typeof node.ChainID === 'bigint') {
-    chainID = BigInt(node.ChainID)
-  } else if (node.ChainID instanceof Uint8Array) {
-    chainID = arrayToBigInt(node.ChainID)
-  } else if (node.ChainID instanceof Buffer) {
-    chainID = bufferToBigInt(node.ChainID)
-  } else if (typeof node.ChainID === 'bigint') {
-    chainID = node.ChainID
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.ChainID needs to be of type bigint')
-  }
-
-  if (node.Nonce == null) {
-    throw new TypeError('Invalid eth-tx form; node.Nonce is null/undefined')
-  } else if (typeof node.Nonce === 'string' || typeof node.Nonce === 'bigint') {
-    accountNonce = BigInt(node.Nonce)
-  } else if (node.Nonce instanceof Uint8Array) {
-    accountNonce = arrayToBigInt(node.Nonce)
-  } else if (node.Nonce instanceof Buffer) {
-    accountNonce = bufferToBigInt(node.Nonce)
-  } else if (typeof node.Nonce === 'bigint') {
-    accountNonce = node.Nonce
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.Nonce needs to be of type bigint')
-  }
-
-  if (node.GasPrice == null) {
-    throw new TypeError('Invalid eth-tx legacy form; node.GasPrice is null/undefined')
-  } else if (typeof node.GasPrice === 'string' || typeof node.GasPrice === 'bigint') {
-    gasPrice = BigInt(node.GasPrice)
-  } else if (node.GasPrice instanceof Uint8Array) {
-    gasPrice = arrayToBigInt(node.GasPrice)
-  } else if (node.GasPrice instanceof Buffer) {
-    gasPrice = bufferToBigInt(node.GasPrice)
-  } else if (typeof node.GasPrice === 'bigint') {
-    gasPrice = node.GasPrice
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.GasPrice needs to be of type bigint')
-  }
-
-  if (node.GasLimit == null) {
-    throw new TypeError('Invalid eth-tx form; node.GasLimit is null/undefined')
-  } else if (typeof node.GasLimit === 'string' || typeof node.GasLimit === 'bigint') {
-    gasLimit = BigInt(node.GasLimit)
-  } else if (node.GasLimit instanceof Uint8Array) {
-    gasLimit = arrayToBigInt(node.GasLimit)
-  } else if (node.GasLimit instanceof Buffer) {
-    gasLimit = bufferToBigInt(node.GasLimit)
-  } else if (typeof node.GasLimit === 'bigint') {
-    gasLimit = node.GasLimit
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.GasLimit needs to be of type bigint')
-  }
-
-  if (node.Recipient == null) {
-    receipient = undefined
-  } else if (typeof node.Recipient === 'string') {
-    receipient = Uint8Array.from(Buffer.from(node.Recipient, 'hex'))
-  } else if (node.Recipient instanceof Uint8Array) {
-    receipient = node.Recipient
-  } else if (node.Recipient instanceof Buffer) {
-    receipient = Uint8Array.from(node.Recipient)
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.Recipient needs to be of type Uint8Array')
-  }
-
-  if (node.Value == null) {
-    throw new TypeError('Invalid eth-tx form; node.Value is null/undefined')
-  } else if (typeof node.Value === 'string' || typeof node.Value === 'bigint') {
-    amount = BigInt(node.Value)
-  } else if (node.Value instanceof Uint8Array) {
-    amount = arrayToBigInt(node.Value)
-  } else if (node.Value instanceof Buffer) {
-    amount = bufferToBigInt(node.Value)
-  } else if (typeof node.Value === 'bigint') {
-    amount = node.Value
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.Value needs to be of type bigint')
-  }
-
-  if (node.Data == null) {
-    throw new TypeError('Invalid eth-tx form; node.Data is null/undefined')
-  } else if (typeof node.Data === 'string') {
-    data = Uint8Array.from(Buffer.from(node.Data, 'hex'))
-  } else if (node.Data instanceof Uint8Array) {
-    data = node.Data
-  } else if (node.Data instanceof Buffer) {
-    data = Uint8Array.from(node.Data)
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.Data needs to be of type Uint8Array')
+  return {
+    TxType: baseTx.TxType,
+    ChainID: chainID,
+    AccountNonce: baseTx.AccountNonce,
+    GasPrice: gasPrice,
+    GasLimit: baseTx.GasLimit,
+    Recipient: baseTx.Recipient,
+    Amount: baseTx.Amount,
+    Data: baseTx.Data,
+    AccessList: node.AccessList,
+    V: baseTx.V,
+    R: baseTx.R,
+    S: baseTx.S
   }
 }
 
 function prepareFeeMarketTx (node: any): Transaction {
-  let chainID: bigint
-  let accountNonce: bigint
-  let gasTipCap: bigint
-  let gasFeeCap: bigint
-  let gasLimit: bigint
-  let receipient: Uint8Array | undefined
-  let amount: bigint
-  let data: Uint8Array
-  let accessList: AccessListBuffer
-  let v: bigint
-  let r: bigint
-  let s: bigint
+  let gasTipCap: BN
+  let gasFeeCap: BN
 
-  if (node.ChainID == null) {
-    throw new TypeError('Invalid eth-tx form; node.ChainID is null/undefined')
-  } else if (typeof node.ChainID === 'string' || typeof node.ChainID === 'bigint') {
-    chainID = BigInt(node.ChainID)
-  } else if (node.ChainID instanceof Uint8Array) {
-    chainID = arrayToBigInt(node.ChainID)
-  } else if (node.ChainID instanceof Buffer) {
-    chainID = bufferToBigInt(node.ChainID)
-  } else if (typeof node.ChainID === 'bigint') {
-    chainID = node.ChainID
+  const chainID = prepareChainID(node)
+  const baseTx = prepareBaseFields(node, 2)
+  validateAccessList(node)
+
+  if (node.GasTipCap == null) {
+    throw new TypeError('Invalid eth-tx form; node.GasTipCap is null/undefined')
+  } else if (typeof node.GasTipCap === 'string' || typeof node.GasTipCap === 'number' || node.GasTipCap instanceof Uint8Array ||
+    node.GasTipCap instanceof Buffer) {
+    gasTipCap = new BN(node.GasTipCap, 10)
+  } else if (typeof node.GasTipCap === 'bigint') {
+    gasTipCap = new BN(node.GasTipCap.toString(), 10)
   } else {
-    throw new TypeError('Invalid eth-tx form; node.ChainID needs to be of type bigint')
+    throw new TypeError('Invalid eth-tx form; node.GasTipCap needs to be of type BN')
   }
 
-  if (node.Nonce == null) {
-    throw new TypeError('Invalid eth-tx form; node.Nonce is null/undefined')
-  } else if (typeof node.Nonce === 'string' || typeof node.Nonce === 'bigint') {
-    accountNonce = BigInt(node.Nonce)
-  } else if (node.Nonce instanceof Uint8Array) {
-    accountNonce = arrayToBigInt(node.Nonce)
-  } else if (node.Nonce instanceof Buffer) {
-    accountNonce = bufferToBigInt(node.Nonce)
-  } else if (typeof node.Nonce === 'bigint') {
-    accountNonce = node.Nonce
+  if (node.GasFeeCap == null) {
+    throw new TypeError('Invalid eth-tx form; node.GasFeeCap is null/undefined')
+  } else if (typeof node.GasFeeCap === 'string' || typeof node.GasFeeCap === 'number' || node.GasFeeCap instanceof Uint8Array ||
+    node.GasFeeCap instanceof Buffer) {
+    gasFeeCap = new BN(node.GasFeeCap, 10)
+  } else if (typeof node.GasFeeCap === 'bigint') {
+    gasFeeCap = new BN(node.GasFeeCap.toString(), 10)
   } else {
-    throw new TypeError('Invalid eth-tx form; node.Nonce needs to be of type bigint')
+    throw new TypeError('Invalid eth-tx form; node.GasFeeCap needs to be of type BN')
   }
 
-  if (node.GasLimit == null) {
-    throw new TypeError('Invalid eth-tx form; node.GasLimit is null/undefined')
-  } else if (typeof node.GasLimit === 'string' || typeof node.GasLimit === 'bigint') {
-    gasLimit = BigInt(node.GasLimit)
-  } else if (node.GasLimit instanceof Uint8Array) {
-    gasLimit = arrayToBigInt(node.GasLimit)
-  } else if (node.GasLimit instanceof Buffer) {
-    gasLimit = bufferToBigInt(node.GasLimit)
-  } else if (typeof node.GasLimit === 'bigint') {
-    gasLimit = node.GasLimit
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.GasLimit needs to be of type bigint')
-  }
-
-  if (node.Recipient == null) {
-    receipient = undefined
-  } else if (typeof node.Recipient === 'string') {
-    receipient = Uint8Array.from(Buffer.from(node.Recipient, 'hex'))
-  } else if (node.Recipient instanceof Uint8Array) {
-    receipient = node.Recipient
-  } else if (node.Recipient instanceof Buffer) {
-    receipient = Uint8Array.from(node.Recipient)
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.Recipient needs to be of type Uint8Array')
-  }
-
-  if (node.Value == null) {
-    throw new TypeError('Invalid eth-tx form; node.Value is null/undefined')
-  } else if (typeof node.Value === 'string' || typeof node.Value === 'bigint') {
-    amount = BigInt(node.Value)
-  } else if (node.Value instanceof Uint8Array) {
-    amount = arrayToBigInt(node.Value)
-  } else if (node.Value instanceof Buffer) {
-    amount = bufferToBigInt(node.Value)
-  } else if (typeof node.Value === 'bigint') {
-    amount = node.Value
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.Value needs to be of type bigint')
-  }
-
-  if (node.Data == null) {
-    throw new TypeError('Invalid eth-tx form; node.Data is null/undefined')
-  } else if (typeof node.Data === 'string') {
-    data = Uint8Array.from(Buffer.from(node.Data, 'hex'))
-  } else if (node.Data instanceof Uint8Array) {
-    data = node.Data
-  } else if (node.Data instanceof Buffer) {
-    data = Uint8Array.from(node.Data)
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.Data needs to be of type Uint8Array')
+  return {
+    TxType: baseTx.TxType,
+    ChainID: chainID,
+    AccountNonce: baseTx.AccountNonce,
+    GasTipCap: gasTipCap,
+    GasFeeCap: gasFeeCap,
+    GasLimit: baseTx.GasLimit,
+    Recipient: baseTx.Recipient,
+    Amount: baseTx.Amount,
+    Data: baseTx.Data,
+    AccessList: node.AccessList,
+    V: baseTx.V,
+    R: baseTx.R,
+    S: baseTx.S
   }
 }
 
@@ -308,25 +248,6 @@ export function prepare (node: any): Transaction {
     throw new TypeError('Invalid eth-tx form')
   }
 
-  /*
-  /*
-export interface Transaction {
-    TxType: number,
-    ChainID?: bigint,
-    AccountNonce: bigint,
-    GasPrice?: bigint,
-    GasTipCap?: bigint,
-    GasFeeCap?: bigint,
-    GasLimit: bigint,
-    Recipient?: Uint8Array,
-    Amount: bigint,
-    Data: Uint8Array,
-    AccessList?: AccessListBuffer,
-    V: bigint,
-    R: bigint,
-    S: bigint
-}
- */
   let txType: number
 
   if (node.TxType == null) {
@@ -353,230 +274,140 @@ export interface Transaction {
     default:
       throw Error(`unrecognized TxType: ${txType}`)
   }
+}
 
-  if (node.UnclesCID == null) {
-    throw new TypeError('Invalid eth-tx form; node.parentHash is null/undefined')
-  } else if (typeof node.UnclesCID === 'string') {
-    unclesCID = CID.parse(node.UnclesCID)
-  } else if (node.UnclesCID instanceof Uint8Array) {
-    unclesCID = CID.decode(node.UnclesCID)
-  } else if (node.UnclesCID instanceof Buffer) {
-    unclesCID = CID.decode(Uint8Array.from(node.UnclesCID))
-  } else if (CID.isCID(node.UnclesCID)) {
-    unclesCID = node.UnclesCID
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.UnclesCID needs to be of type CID')
-  }
-
-  if (node.ChainID == null) {
-    throw new TypeError('Invalid eth-tx form; node.Coinbase is null/undefined')
-  } else if (typeof node.Coinbase === 'string') {
-    coinbase = Uint8Array.from(Buffer.from(node.Coinbase, 'hex'))
-  } else if (node.Coinbase instanceof Uint8Array) {
-    coinbase = node.Coinbase
-  } else if (node.Coinbase instanceof Buffer) {
-    coinbase = Uint8Array.from(node.Coinbase)
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.Coinbase needs to be of type Uint8Array')
-  }
-
-  if (node.StateRootCID == null) {
-    throw new TypeError('Invalid eth-tx form; node.parentHash is null/undefined')
-  } else if (typeof node.StateRootCID === 'string') {
-    stateCID = CID.parse(node.StateRootCID)
-  } else if (node.StateRootCID instanceof Uint8Array) {
-    stateCID = CID.decode(node.StateRootCID)
-  } else if (node.StateRootCID instanceof Buffer) {
-    stateCID = CID.decode(Uint8Array.from(node.StateRootCID))
-  } else if (CID.isCID(node.StateRootCID)) {
-    stateCID = node.StateRootCID
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.StateRootCID needs to be of type CID')
-  }
-
-  if (node.TxRootCID == null) {
-    throw new TypeError('Invalid eth-tx form; node.parentHash is null/undefined')
-  } else if (typeof node.TxRootCID === 'string') {
-    txCID = CID.parse(node.TxRootCID)
-  } else if (node.TxRootCID instanceof Uint8Array) {
-    txCID = CID.decode(node.TxRootCID)
-  } else if (node.TxRootCID instanceof Buffer) {
-    txCID = CID.decode(Uint8Array.from(node.TxRootCID))
-  } else if (CID.isCID(node.TxRootCID)) {
-    txCID = node.TxRootCID
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.TxRootCID needs to be of type CID')
-  }
-
-  if (node.RctRootCID == null) {
-    throw new TypeError('Invalid eth-tx form; node.parentHash is null/undefined')
-  } else if (typeof node.RctRootCID === 'string') {
-    rctCID = CID.parse(node.RctRootCID)
-  } else if (node.RctRootCID instanceof Uint8Array) {
-    rctCID = CID.decode(node.RctRootCID)
-  } else if (node.RctRootCID instanceof Buffer) {
-    rctCID = CID.decode(Uint8Array.from(node.RctRootCID))
-  } else if (CID.isCID(node.RctRootCID)) {
-    rctCID = node.RctRootCID
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.RctRootCID needs to be of type CID')
-  }
-
-  if (node.Bloom == null) {
-    throw new TypeError('Invalid eth-tx form; node.Bloom is null/undefined')
-  } else if (typeof node.Bloom === 'string') {
-    bloom = Uint8Array.from(Buffer.from(node.Bloom, 'hex'))
-  } else if (node.Bloom instanceof Uint8Array) {
-    bloom = node.Bloom
-  } else if (node.Bloom instanceof Buffer) {
-    bloom = Uint8Array.from(node.Bloom)
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.Bloom needs to be of type Uint8Array')
-  }
-
-  if (node.Difficulty == null) {
-    throw new TypeError('Invalid eth-tx form; node.Difficulty is null/undefined')
-  } else if (typeof node.Difficulty === 'string' || typeof node.Difficulty === 'number') {
-    diff = BigInt(node.Difficulty)
-  } else if (typeof node.Difficulty === 'bigint') {
-    diff = node.Difficulty
-  } else if (node.Difficulty instanceof Uint8Array) {
-    diff = arrayToBigInt(node.Difficulty)
-  } else if (node.Difficulty instanceof Buffer) {
-    diff = bufferToBigInt(node.Difficulty)
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.Difficulty needs to be of type bigint')
-  }
-
-  if (node.Number == null) {
-    throw new TypeError('Invalid eth-tx form; node.Number is null/undefined')
-  } else if (typeof node.Number === 'string' || typeof node.Number === 'number') {
-    number = BigInt(node.Number)
-  } else if (typeof node.Number === 'bigint') {
-    number = node.Number
-  } else if (node.Number instanceof Uint8Array) {
-    number = arrayToBigInt(node.Number)
-  } else if (node.Number instanceof Buffer) {
-    number = bufferToBigInt(node.Number)
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.Number needs to be of type bigint')
+function validateBaseTx (node: Transaction) {
+  if (node.AccountNonce == null) {
+    throw new TypeError('Invalid eth-tx form; node.AccountNonce is null/undefined')
+  } else if (!(node.AccountNonce instanceof BN)) {
+    throw new TypeError('Invalid eth-tx form; node.AccountNonce needs to be of type BN')
   }
 
   if (node.GasLimit == null) {
     throw new TypeError('Invalid eth-tx form; node.GasLimit is null/undefined')
-  } else if (typeof node.GasLimit === 'string' || typeof node.GasLimit === 'number') {
-    gasLimit = BigInt(node.GasLimit)
-  } else if (typeof node.GasLimit === 'bigint') {
-    gasLimit = node.GasLimit
-  } else if (node.GasLimit instanceof Uint8Array) {
-    gasLimit = arrayToBigInt(node.GasLimit)
-  } else if (node.GasLimit instanceof Buffer) {
-    gasLimit = bufferToBigInt(node.GasLimit)
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.GasLimit needs to be of type bigint')
+  } else if (!(node.GasLimit instanceof BN)) {
+    throw new TypeError('Invalid eth-tx form; node.GasLimit needs to be of type BN')
   }
 
-  if (node.GasUsed == null) {
-    throw new TypeError('Invalid eth-tx form; node.GasUsed is null/undefined')
-  } else if (typeof node.GasUsed === 'string' || typeof node.GasUsed === 'number') {
-    gasUsed = BigInt(node.GasUsed)
-  } else if (typeof node.GasUsed === 'bigint') {
-    gasUsed = node.GasUsed
-  } else if (node.GasUsed instanceof Uint8Array) {
-    gasUsed = arrayToBigInt(node.GasUsed)
-  } else if (node.GasUsed instanceof Buffer) {
-    gasUsed = bufferToBigInt(node.GasUsed)
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.GasUsed needs to be of type bigint')
+  if (node.Recipient === null) {
+    throw new TypeError('Invalid eth-tx form; node.Recipient is null')
+  } else if (!(node.Recipient instanceof Address) && typeof node.Recipient !== 'undefined') {
+    throw new TypeError('Invalid eth-tx form; node.Recipient needs to be of type Address or undefined')
   }
 
-  if (node.Time == null) {
-    throw new TypeError('Invalid eth-tx form; node.Time is null/undefined')
-  } else if (typeof node.Time === 'string' || typeof node.Time === 'bigint') {
-    timestamp = Number(node.Time)
-  } else if (node.Time instanceof Uint8Array) {
-    timestamp = arrayToNumber(node.Time)
-  } else if (node.Time instanceof Buffer) {
-    timestamp = bufferToNumber(node.Time)
-  } else if (typeof node.Time === 'number') {
-    timestamp = node.Time
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.Time needs to be of type number')
+  if (node.Amount == null) {
+    throw new TypeError('Invalid eth-tx form; node.Amount is null/undefined')
+  } else if (!(node.Amount instanceof BN)) {
+    throw new TypeError('Invalid eth-tx form; node.Amount needs to be of type BN')
   }
 
-  if (node.Extra == null) {
-    throw new TypeError('Invalid eth-tx form; node.Extra is null/undefined')
-  } else if (typeof node.Extra === 'string') {
-    extraData = Uint8Array.from(Buffer.from(node.Extra, 'hex'))
-  } else if (node.Extra instanceof Uint8Array) {
-    extraData = node.Extra
-  } else if (node.Extra instanceof Buffer) {
-    extraData = Uint8Array.from(node.Extra)
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.Extra needs to be of type Uint8Array')
+  if (node.Data == null) {
+    throw new TypeError('Invalid eth-tx form; node.Data is null/undefined')
+  } else if (!(node.Data instanceof Buffer)) {
+    throw new TypeError('Invalid eth-tx form; node.Data needs to be of type Buffer')
   }
 
-  if (node.MixDigest == null) {
-    throw new TypeError('Invalid eth-tx form; node.Extra is null/undefined')
-  } else if (typeof node.MixDigest === 'string') {
-    mixHash = Uint8Array.from(Buffer.from(node.MixDigest, 'hex'))
-  } else if (node.MixDigest instanceof Uint8Array) {
-    mixHash = node.MixDigest
-  } else if (node.MixDigest instanceof Buffer) {
-    mixHash = Uint8Array.from(node.MixDigest)
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.MixDigest needs to be of type Uint8Array')
+  if (node.V == null) {
+    throw new TypeError('Invalid eth-tx form; node.V is null/undefined')
+  } else if (!(node.V instanceof BN)) {
+    throw new TypeError('Invalid eth-tx form; node.V needs to be of type BN')
   }
 
-  if (node.Nonce == null) {
-    throw new TypeError('Invalid eth-tx form; node.Nonce is null/undefined')
-  } else if (typeof node.Nonce === 'string' || typeof node.Nonce === 'number') {
-    nonce = BigInt(node.Nonce)
-  } else if (typeof node.Nonce === 'bigint') {
-    nonce = node.Nonce
-  } else if (node.Nonce instanceof Uint8Array) {
-    nonce = arrayToBigInt(node.Nonce)
-  } else if (node.Nonce instanceof Buffer) {
-    nonce = bufferToBigInt(node.Nonce)
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.Nonce needs to be of type bigint')
+  if (node.R == null) {
+    throw new TypeError('Invalid eth-tx form; node.R is null/undefined')
+  } else if (!(node.R instanceof BN)) {
+    throw new TypeError('Invalid eth-tx form; node.R needs to be of type BN')
   }
 
-  if (node.BaseFee == null) {
-    throw new TypeError('Invalid eth-tx form; node.BaseFee is null/undefined')
-  } else if (typeof node.BaseFee === 'string' || typeof node.BaseFee === 'number') {
-    baseFeePerGas = BigInt(node.BaseFee)
-  } else if (typeof node.BaseFee === 'bigint') {
-    baseFeePerGas = node.BaseFee
-  } else if (node.BaseFee instanceof Uint8Array) {
-    baseFeePerGas = arrayToBigInt(node.BaseFee)
-  } else if (node.BaseFee instanceof Buffer) {
-    baseFeePerGas = bufferToBigInt(node.BaseFee)
-  } else {
-    throw new TypeError('Invalid eth-tx form; node.BaseFee needs to be of type bigint')
-  }
-
-  return {
-    ParentCID: parentCID,
-    UnclesCID: unclesCID,
-    Coinbase: coinbase,
-    StateRootCID: stateCID,
-    TxRootCID: txCID,
-    RctRootCID: rctCID,
-    Bloom: bloom,
-    Difficulty: diff,
-    Number: number,
-    GasLimit: gasLimit,
-    GasUsed: gasUsed,
-    Time: timestamp,
-    Extra: extraData,
-    MixDigest: mixHash,
-    Nonce: nonce,
-    BaseFee: baseFeePerGas
+  if (node.S == null) {
+    throw new TypeError('Invalid eth-tx form; node.S is null/undefined')
+  } else if (!(node.S instanceof BN)) {
+    throw new TypeError('Invalid eth-tx form; node.S needs to be of type BN')
   }
 }
 
-export function validate (node: Header) {
+function validateGasPrice (node: Transaction) {
+  if (node.GasPrice == null) {
+    throw new TypeError('Invalid eth-tx form; node.GasPrice is null/undefined')
+  } else if (!(node.GasPrice instanceof BN)) {
+    throw new TypeError('Invalid eth-tx form; node.GasPrice needs to be of type BN')
+  }
+}
+
+function validateChainID (node: Transaction) {
+  if (node.ChainID == null) {
+    throw new TypeError('Invalid eth-tx form; node.ChainID is null/undefined')
+  } else if (!(node.ChainID instanceof BN)) {
+    throw new TypeError('Invalid eth-tx form; node.ChainID needs to be of type BN')
+  }
+}
+
+function validateAccessList (node: Transaction) {
+  if (node.AccessList === null) {
+    throw new TypeError('Invalid eth-tx form; node.AccessList is null')
+  } else if (node.AccessList instanceof Array) {
+    for (const accessListElement of node.AccessList) {
+      if (accessListElement instanceof Array) {
+        if (accessListElement.length !== 2) {
+          throw new TypeError('Invalid eth-tx form; node.AccessList members needs to be Arrays of length 2')
+        }
+        for (const [i, accessListElementElement] of accessListElement.entries()) {
+          if (i === 0) {
+            if (!(accessListElementElement instanceof Buffer)) {
+              throw new TypeError('Invalid eth-tx form; node.AccessList member first element needs to be a Buffer')
+            }
+          }
+          if (i === 1) {
+            if (accessListElementElement instanceof Array) {
+              for (const accessListElementElementElement of accessListElementElement) {
+                if (!(accessListElementElementElement instanceof Buffer)) {
+                  throw new TypeError('Invalid eth-tx form; node.AccessList member second element needs to be an Array of Buffers')
+                }
+              }
+            } else {
+              throw new TypeError('Invalid eth-tx form; node.AccessList member second element needs to be an Array of Buffers')
+            }
+          }
+        }
+      } else {
+        throw new TypeError('Invalid eth-tx form; node.AccessList members needs to be Arrays')
+      }
+    }
+  } else if (node.AccessList !== undefined) {
+    throw new TypeError('Invalid eth-tx form; node.AccessList needs to be an Array or undefined')
+  }
+}
+
+function validateLegacyTx (node: Transaction) {
+  validateBaseTx(node)
+  validateGasPrice(node)
+}
+
+function validateAccessListTx (node: Transaction) {
+  validateBaseTx(node)
+  validateGasPrice(node)
+  validateChainID(node)
+  validateAccessList(node)
+}
+function validateFeeMarketTx (node: Transaction) {
+  validateBaseTx(node)
+  validateChainID(node)
+  validateAccessList(node)
+
+  if (node.GasTipCap == null) {
+    throw new TypeError('Invalid eth-tx form; node.GasTipCap is null/undefined')
+  } else if (!(node.GasTipCap instanceof BN)) {
+    throw new TypeError('Invalid eth-tx form; node.GasTipCap needs to be of type BN')
+  }
+
+  if (node.GasFeeCap == null) {
+    throw new TypeError('Invalid eth-tx form; node.GasFeeCap is null/undefined')
+  } else if (!(node.GasFeeCap instanceof BN)) {
+    throw new TypeError('Invalid eth-tx form; node.GasFeeCap needs to be of type BN')
+  }
+}
+
+export function validate (node: Transaction) {
   if (!node || typeof node !== 'object' || Array.isArray(node)) {
     throw new TypeError('Invalid eth-tx form')
   }
@@ -585,99 +416,24 @@ export function validate (node: Header) {
     throw new TypeError('Invalid eth-tx form (extraneous properties)')
   }
 
-  if (node.ParentCID == null) {
-    throw new TypeError('Invalid eth-tx form; node.parentHash is null/undefined')
-  } else if (!CID.isCID(node.ParentCID)) {
-    throw new TypeError('Invalid eth-tx form; node.ParentCID needs to be of type CID')
+  let txType: number
+
+  if (node.TxType == null) {
+    throw new TypeError('Invalid eth-tx form; node.TxType is null/undefined')
+  } else if (typeof node.TxType !== 'number') {
+    throw new TypeError('Invalid eth-tx form; node.TxType needs to be of type number')
+  } else {
+    txType = node.TxType
   }
 
-  if (node.UnclesCID == null) {
-    throw new TypeError('Invalid eth-tx form; node.parentHash is null/undefined')
-  } else if (!CID.isCID(node.UnclesCID)) {
-    throw new TypeError('Invalid eth-tx form; node.UnclesCID needs to be of type CID')
-  }
-
-  if (node.Coinbase == null) {
-    throw new TypeError('Invalid eth-tx form; node.Coinbase is null/undefined')
-  } else if (!(node.Coinbase instanceof Uint8Array)) {
-    throw new TypeError('Invalid eth-tx form; node.Coinbase needs to be of type Uint8Array')
-  }
-
-  if (node.StateRootCID == null) {
-    throw new TypeError('Invalid eth-tx form; node.parentHash is null/undefined')
-  } else if (!CID.isCID(node.StateRootCID)) {
-    throw new TypeError('Invalid eth-tx form; node.StateRootCID needs to be of type CID')
-  }
-
-  if (node.TxRootCID == null) {
-    throw new TypeError('Invalid eth-tx form; node.parentHash is null/undefined')
-  } else if (!CID.isCID(node.TxRootCID)) {
-    throw new TypeError('Invalid eth-tx form; node.TxRootCID needs to be of type CID')
-  }
-
-  if (node.RctRootCID == null) {
-    throw new TypeError('Invalid eth-tx form; node.parentHash is null/undefined')
-  } else if (!CID.isCID(node.RctRootCID)) {
-    throw new TypeError('Invalid eth-tx form; node.RctRootCID needs to be of type CID')
-  }
-
-  if (node.Bloom == null) {
-    throw new TypeError('Invalid eth-tx form; node.Bloom is null/undefined')
-  } else if (!(node.Bloom instanceof Uint8Array)) {
-    throw new TypeError('Invalid eth-tx form; node.Bloom needs to be of type Uint8Array')
-  }
-
-  if (node.Difficulty == null) {
-    throw new TypeError('Invalid eth-tx form; node.Difficulty is null/undefined')
-  } else if (typeof node.Difficulty !== 'bigint') {
-    throw new TypeError('Invalid eth-tx form; node.Difficulty needs to be of type bigint')
-  }
-
-  if (node.Number == null) {
-    throw new TypeError('Invalid eth-tx form; node.Number is null/undefined')
-  } else if (typeof node.Number !== 'bigint') {
-    throw new TypeError('Invalid eth-tx form; node.Number needs to be of type bigint')
-  }
-
-  if (node.GasLimit == null) {
-    throw new TypeError('Invalid eth-tx form; node.GasLimit is null/undefined')
-  } else if (typeof node.GasLimit !== 'bigint') {
-    throw new TypeError('Invalid eth-tx form; node.GasLimit needs to be of type bigint')
-  }
-
-  if (node.GasUsed == null) {
-    throw new TypeError('Invalid eth-tx form; node.GasUsed is null/undefined')
-  } else if (typeof node.GasUsed !== 'bigint') {
-    throw new TypeError('Invalid eth-tx form; node.GasUsed needs to be of type bigint')
-  }
-
-  if (node.Time == null) {
-    throw new TypeError('Invalid eth-tx form; node.Time is null/undefined')
-  } else if (typeof node.Time !== 'number') {
-    throw new TypeError('Invalid eth-tx form; node.Time needs to be of type number')
-  }
-
-  if (node.Extra == null) {
-    throw new TypeError('Invalid eth-tx form; node.Extra is null/undefined')
-  } else if (!(node.Extra instanceof Uint8Array)) {
-    throw new TypeError('Invalid eth-tx form; node.Extra needs to be of type Uint8Array')
-  }
-
-  if (node.MixDigest == null) {
-    throw new TypeError('Invalid eth-tx form; node.Extra is null/undefined')
-  } else if (!(node.MixDigest instanceof Uint8Array)) {
-    throw new TypeError('Invalid eth-tx form; node.MixDigest needs to be of type Uint8Array')
-  }
-
-  if (node.Nonce == null) {
-    throw new TypeError('Invalid eth-tx form; node.Nonce is null/undefined')
-  } else if (typeof node.Nonce !== 'bigint') {
-    throw new TypeError('Invalid eth-tx form; node.Nonce needs to be of type bigint')
-  }
-
-  if (node.BaseFee == null) {
-    throw new TypeError('Invalid eth-tx form; node.BaseFee is null/undefined')
-  } else if (typeof node.BaseFee !== 'bigint') {
-    throw new TypeError('Invalid eth-tx form; node.BaseFee needs to be of type bigint')
+  switch (txType) {
+    case 0:
+      return validateLegacyTx(node)
+    case 1:
+      return validateAccessListTx(node)
+    case 2:
+      return validateFeeMarketTx(node)
+    default:
+      throw Error(`unrecognized TxType: ${txType}`)
   }
 }

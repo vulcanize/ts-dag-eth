@@ -9,6 +9,7 @@ import {
   FeeMarketEIP1559Transaction,
   TransactionFactory
 } from '@ethereumjs/tx'
+const BN = require('bn.js')
 
 export const name = 'eth-tx'
 export const code = 0x93
@@ -16,84 +17,84 @@ export const code = 0x93
 export function encode (node: Transaction): ByteView<Transaction> {
   if (node.TxType === 0) {
     const legacyTx: TxData = {
-      nonce: node.AccountNonce.toString(),
-      gasLimit: node.GasLimit.toString(),
-      value: node.Amount.toString(),
+      nonce: node.AccountNonce,
+      gasLimit: node.GasLimit,
+      value: node.Amount,
       data: node.Data,
-      v: node.V.toString(),
-      r: node.R.toString(),
-      s: node.S.toString(),
+      v: node.V,
+      r: node.R,
+      s: node.S,
       type: node.TxType
     }
     if (typeof node.GasPrice !== 'undefined') {
       Object.defineProperty(legacyTx, 'gasPrice', {
-        value: node.GasPrice.toString()
+        value: node.GasPrice
       })
     }
     if (typeof node.Recipient !== 'undefined') {
       Object.defineProperty(legacyTx, 'to', {
-        value: Buffer.from(node.Recipient)
+        value: node.Recipient
       })
     }
     return LegacyTransaction.fromTxData(legacyTx).serialize()
   } else if (node.TxType === 1) {
     const accessListTx: AccessListEIP2930TxData = {
-      nonce: node.AccountNonce.toString(),
-      gasLimit: node.GasLimit.toString(),
-      value: node.Amount.toString(),
+      nonce: node.AccountNonce,
+      gasLimit: node.GasLimit,
+      value: node.Amount,
       data: node.Data,
-      v: node.V.toString(),
-      r: node.R.toString(),
-      s: node.S.toString(),
+      v: node.V,
+      r: node.R,
+      s: node.S,
       type: node.TxType,
       accessList: node.AccessList
     }
     if (typeof node.Recipient !== 'undefined') {
       Object.defineProperty(accessListTx, 'to', {
-        value: Buffer.from(node.Recipient)
+        value: node.Recipient
       })
     }
     if (typeof node.GasPrice !== 'undefined') {
       Object.defineProperty(accessListTx, 'gasPrice', {
-        value: node.GasPrice.toString()
+        value: node.GasPrice
       })
     }
     if (typeof node.ChainID !== 'undefined') {
       Object.defineProperty(accessListTx, 'chainId', {
-        value: node.ChainID.toString()
+        value: node.ChainID
       })
     }
     return AccessListEIP2930Transaction.fromTxData(accessListTx).serialize()
   } else if (node.TxType === 2) {
     const dynamicFeeTx: FeeMarketEIP1559TxData = {
-      nonce: node.AccountNonce.toString(),
-      gasLimit: node.GasLimit.toString(),
-      value: node.Amount.toString(),
+      nonce: node.AccountNonce,
+      gasLimit: node.GasLimit,
+      value: node.Amount,
       data: node.Data,
-      v: node.V.toString(),
-      r: node.R.toString(),
-      s: node.S.toString(),
+      v: node.V,
+      r: node.R,
+      s: node.S,
       type: node.TxType,
       accessList: node.AccessList
     }
     if (typeof node.Recipient !== 'undefined') {
       Object.defineProperty(dynamicFeeTx, 'to', {
-        value: Buffer.from(node.Recipient)
+        value: node.Recipient
       })
     }
     if (typeof node.ChainID !== 'undefined') {
       Object.defineProperty(dynamicFeeTx, 'chainId', {
-        value: node.ChainID.toString()
+        value: node.ChainID
       })
     }
     if (typeof node.GasTipCap !== 'undefined') {
       Object.defineProperty(dynamicFeeTx, 'maxPriorityFeePerGas', {
-        value: node.GasTipCap.toString()
+        value: node.GasTipCap
       })
     }
     if (typeof node.GasFeeCap !== 'undefined') {
       Object.defineProperty(dynamicFeeTx, 'maxFeePerGas', {
-        value: node.GasFeeCap.toString()
+        value: node.GasFeeCap
       })
     }
     return FeeMarketEIP1559Transaction.fromTxData(dynamicFeeTx).serialize()
@@ -131,127 +132,79 @@ export function decode (bytes: ByteView<Transaction>): Transaction {
 function unpackLegacyTx (legacyTx: LegacyTransaction): Transaction {
   const tx: Transaction = {
     TxType: 0,
-    AccountNonce: BigInt(legacyTx.nonce.toString()),
-    GasPrice: BigInt(legacyTx.gasPrice.toString()),
-    GasLimit: BigInt(legacyTx.gasLimit.toString()),
-    Amount: BigInt(legacyTx.value.toString()),
+    AccountNonce: legacyTx.nonce,
+    GasPrice: legacyTx.gasPrice,
+    GasLimit: legacyTx.gasLimit,
+    Amount: legacyTx.value,
     Data: legacyTx.data,
-    V: BigInt(0),
-    R: BigInt(0),
-    S: BigInt(0)
+    Recipient: legacyTx.to,
+    V: new BN('0', 10),
+    R: new BN('0', 10),
+    S: new BN('0', 10)
   }
-  if (typeof legacyTx.to !== 'undefined') {
-    Object.defineProperty(tx, 'Recipient', {
-      value: Uint8Array.from(legacyTx.to.toBuffer())
-    })
-  }
-  if (typeof legacyTx.v !== 'undefined') {
-    Object.defineProperty(tx, 'V', {
-      value: BigInt(legacyTx.v.toString())
-    })
-  } else {
-    throw Error('transaction IPLD must have V')
-  }
-  if (typeof legacyTx.r !== 'undefined') {
-    Object.defineProperty(tx, 'R', {
-      value: BigInt(legacyTx.r.toString())
-    })
-  } else {
-    throw Error('transaction IPLD must have R')
-  }
-  if (typeof legacyTx.s !== 'undefined') {
-    Object.defineProperty(tx, 'S', {
-      value: BigInt(legacyTx.s.toString())
-    })
-  } else {
-    throw Error('transaction IPLD must have S')
-  }
+  checkSig(legacyTx)
   return tx
 }
 
 function unpackAccessListTx (alTx: AccessListEIP2930Transaction): Transaction {
   const tx: Transaction = {
     TxType: 0,
-    AccountNonce: BigInt(alTx.nonce.toString()),
-    GasPrice: BigInt(alTx.gasPrice.toString()),
-    GasLimit: BigInt(alTx.gasLimit.toString()),
-    Amount: BigInt(alTx.value.toString()),
+    AccountNonce: alTx.nonce,
+    GasPrice: alTx.gasPrice,
+    GasLimit: alTx.gasLimit,
+    Amount: alTx.value,
     Data: alTx.data,
-    V: BigInt(0),
-    R: BigInt(0),
-    S: BigInt(0),
-    ChainID: BigInt(alTx.chainId.toString()),
+    Recipient: alTx.to,
+    V: new BN('0', 10),
+    R: new BN('0', 10),
+    S: new BN('0', 10),
+    ChainID: alTx.chainId,
     AccessList: alTx.accessList
   }
-  if (typeof alTx.to !== 'undefined') {
-    Object.defineProperty(tx, 'Recipient', {
-      value: Uint8Array.from(alTx.to.toBuffer())
-    })
-  }
-  if (typeof alTx.v !== 'undefined') {
-    Object.defineProperty(tx, 'V', {
-      value: BigInt(alTx.v.toString())
-    })
-  } else {
-    throw Error('transaction IPLD must have V')
-  }
-  if (typeof alTx.r !== 'undefined') {
-    Object.defineProperty(tx, 'R', {
-      value: BigInt(alTx.r.toString())
-    })
-  } else {
-    throw Error('transaction IPLD must have R')
-  }
-  if (typeof alTx.s !== 'undefined') {
-    Object.defineProperty(tx, 'S', {
-      value: BigInt(alTx.s.toString())
-    })
-  } else {
-    throw Error('transaction IPLD must have S')
-  }
+  checkSig(alTx)
   return tx
 }
 
 function unpackFeeMarketTx (fmTx: FeeMarketEIP1559Transaction): Transaction {
   const tx: Transaction = {
     TxType: 0,
-    AccountNonce: BigInt(fmTx.nonce.toString()),
-    GasLimit: BigInt(fmTx.gasLimit.toString()),
-    Amount: BigInt(fmTx.value.toString()),
+    AccountNonce: fmTx.nonce,
+    GasLimit: fmTx.gasLimit,
+    Amount: fmTx.value,
     Data: fmTx.data,
-    V: BigInt(0),
-    R: BigInt(0),
-    S: BigInt(0),
-    ChainID: BigInt(fmTx.chainId.toString()),
+    Recipient: fmTx.to,
+    V: new BN('0', 10),
+    R: new BN('0', 10),
+    S: new BN('0', 10),
+    ChainID: fmTx.chainId,
     AccessList: fmTx.accessList,
-    GasTipCap: BigInt(fmTx.maxPriorityFeePerGas.toString()),
-    GasFeeCap: BigInt(fmTx.maxFeePerGas.toString())
+    GasTipCap: fmTx.maxPriorityFeePerGas,
+    GasFeeCap: fmTx.maxFeePerGas
   }
-  if (typeof fmTx.to !== 'undefined') {
-    Object.defineProperty(tx, 'Recipient', {
-      value: Uint8Array.from(fmTx.to.toBuffer())
-    })
-  }
-  if (typeof fmTx.v !== 'undefined') {
+  checkSig(fmTx)
+  return tx
+}
+
+function checkSig (tx: LegacyTransaction | FeeMarketEIP1559Transaction | AccessListEIP2930Transaction) {
+  if (typeof tx.v !== 'undefined') {
     Object.defineProperty(tx, 'V', {
-      value: BigInt(fmTx.v.toString())
+      value: tx.v
     })
   } else {
     throw Error('transaction IPLD must have V')
   }
-  if (typeof fmTx.r !== 'undefined') {
+  if (typeof tx.r !== 'undefined') {
     Object.defineProperty(tx, 'R', {
-      value: BigInt(fmTx.r.toString())
+      value: tx.r
     })
   } else {
     throw Error('transaction IPLD must have R')
   }
-  if (typeof fmTx.s !== 'undefined') {
+  if (typeof tx.s !== 'undefined') {
     Object.defineProperty(tx, 'S', {
-      value: BigInt(fmTx.s.toString())
+      value: tx.s
     })
   } else {
     throw Error('transaction IPLD must have S')
   }
-  return tx
 }

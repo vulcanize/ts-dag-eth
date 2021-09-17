@@ -259,13 +259,13 @@ export function validate (node: Header) {
   }
 
   if (node.ParentCID == null) {
-    throw new TypeError('Invalid eth-header form; node.parentHash is null/undefined')
+    throw new TypeError('Invalid eth-header form; node.ParentCID is null/undefined')
   } else if (!CID.isCID(node.ParentCID)) {
     throw new TypeError('Invalid eth-header form; node.ParentCID needs to be of type CID')
   }
 
   if (node.UnclesCID == null) {
-    throw new TypeError('Invalid eth-header form; node.parentHash is null/undefined')
+    throw new TypeError('Invalid eth-header form; node.UnclesCID is null/undefined')
   } else if (!CID.isCID(node.UnclesCID)) {
     throw new TypeError('Invalid eth-header form; node.UnclesCID needs to be of type CID')
   }
@@ -277,19 +277,19 @@ export function validate (node: Header) {
   }
 
   if (node.StateRootCID == null) {
-    throw new TypeError('Invalid eth-header form; node.parentHash is null/undefined')
+    throw new TypeError('Invalid eth-header form; node.StateRootCID is null/undefined')
   } else if (!CID.isCID(node.StateRootCID)) {
     throw new TypeError('Invalid eth-header form; node.StateRootCID needs to be of type CID')
   }
 
   if (node.TxRootCID == null) {
-    throw new TypeError('Invalid eth-header form; node.parentHash is null/undefined')
+    throw new TypeError('Invalid eth-header form; node.TxRootCID is null/undefined')
   } else if (!CID.isCID(node.TxRootCID)) {
     throw new TypeError('Invalid eth-header form; node.TxRootCID needs to be of type CID')
   }
 
   if (node.RctRootCID == null) {
-    throw new TypeError('Invalid eth-header form; node.parentHash is null/undefined')
+    throw new TypeError('Invalid eth-header form; node.RctRootCID is null/undefined')
   } else if (!CID.isCID(node.RctRootCID)) {
     throw new TypeError('Invalid eth-header form; node.RctRootCID needs to be of type CID')
   }
@@ -337,7 +337,7 @@ export function validate (node: Header) {
   }
 
   if (node.MixDigest == null) {
-    throw new TypeError('Invalid eth-header form; node.Extra is null/undefined')
+    throw new TypeError('Invalid eth-header form; node.MixDigest is null/undefined')
   } else if (!(node.MixDigest instanceof Buffer)) {
     throw new TypeError('Invalid eth-header form; node.MixDigest needs to be of type Buffer')
   }

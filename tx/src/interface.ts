@@ -1,18 +1,20 @@
 import { AccessListBuffer } from '@ethereumjs/tx'
+import * as BN from 'bn.js'
+import { Address } from 'ethereumjs-util'
 
 export interface Transaction {
     TxType: number,
-    ChainID?: bigint,
-    AccountNonce: bigint,
-    GasPrice?: bigint,
-    GasTipCap?: bigint,
-    GasFeeCap?: bigint,
-    GasLimit: bigint,
-    Recipient?: Uint8Array,
-    Amount: bigint,
-    Data: Uint8Array,
+    ChainID?: BN,
+    AccountNonce: BN,
+    GasPrice?: BN,
+    GasTipCap?: BN,
+    GasFeeCap?: BN,
+    GasLimit: BN,
+    Recipient?: Address,
+    Amount: BN,
+    Data: Buffer,
     AccessList?: AccessListBuffer,
-    V: bigint,
-    R: bigint,
-    S: bigint
+    V: BN,
+    R: BN,
+    S: BN
 }
