@@ -5,15 +5,16 @@ import {
   TWO_POW256,
   rlp, bnToUnpaddedBuffer
 } from 'ethereumjs-util'
+import { resolvePostStateOrStatus } from './helpers'
 
 const EIP2930_TRANSACTION_TYPE = 1
 const EIP2930_TRANSACTION_TYPE_BUFFER = Buffer.from(EIP2930_TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
 const EIP1559_TRANSACTION_TYPE = 2
 const EIP1559_TRANSACTION_TYPE_BUFFER = Buffer.from(EIP1559_TRANSACTION_TYPE.toString(16).padStart(2, '0'), 'hex')
-const RECEIPT_STATUS_FAILED_RLP = rlp.encode('')
-const RECEIPT_STATUS_SUCCESS_RLP = rlp.encode('0x01')
+export const RECEIPT_STATUS_FAILED_RLP = rlp.encode('')
+export const RECEIPT_STATUS_SUCCESS_RLP = rlp.encode('0x01')
 
-export interface ReceiptEncodedFields {
+export interface ReceiptData {
   TxType?: number,
   PostState?: Buffer,
   Status?: number,
@@ -38,7 +39,7 @@ export abstract class BaseReceipt {
   public readonly cumulativeGasUsed: BN
   public readonly logs: LogsBuffer
 
-  constructor (rctData: ReceiptEncodedFields) {
+  constructor (rctData: ReceiptData) {
     this._type = rctData.TxType == null ? 0 : rctData.TxType
     this.postState = rctData.PostState
     this.status = rctData.Status
@@ -79,11 +80,6 @@ export abstract class BaseReceipt {
   abstract serialize(): Buffer
 
   /**
-   * Decodes consensus encoding into the appropriate class
-   */
-  abstract fromSerializedRct(serialized: Buffer): LegacyReceipt | AccessListReceipt | DynamicFeeReceipt
-
-  /**
    * Returns the transaction type.
    *
    * Note: legacy tx rcts will return tx type `0`.
@@ -114,11 +110,11 @@ export class LegacyReceipt extends BaseReceipt {
     return rlp.encode(this.raw())
   }
 
-  fromSerializedRct (serialized: Buffer): LegacyReceipt {
+  public static fromSerializedRct (serialized: Buffer): LegacyReceipt {
     const values = rlp.decode(serialized)
 
     if (!Array.isArray(values)) {
-      throw new Error('Invalid serialized rct input. Must be array')
+      throw new TypeError('Invalid serialized rct input. Must be array')
     }
 
     return LegacyReceipt.fromValuesArray(values as any)
@@ -138,18 +134,7 @@ export class LegacyReceipt extends BaseReceipt {
       logs
     ] = values
 
-    let postState: Buffer | undefined
-    let status: number | undefined
-    if (postStateOrStatus === RECEIPT_STATUS_FAILED_RLP) {
-      status = 0
-      postState = undefined
-    } else if (postStateOrStatus === RECEIPT_STATUS_SUCCESS_RLP) {
-      status = 1
-      postState = undefined
-    } else {
-      status = undefined
-      postState = postStateOrStatus
-    }
+    const [postState, status] = resolvePostStateOrStatus(postStateOrStatus)
 
     return new LegacyReceipt(
       {
@@ -170,9 +155,9 @@ export class AccessListReceipt extends BaseReceipt {
     return Buffer.concat([EIP2930_TRANSACTION_TYPE_BUFFER, rlp.encode(base)])
   }
 
-  fromSerializedRct (serialized: Buffer): AccessListReceipt {
+  public static fromSerializedRct (serialized: Buffer): AccessListReceipt {
     if (!serialized.slice(0, 1).equals(EIP2930_TRANSACTION_TYPE_BUFFER)) {
-      throw new Error(
+      throw new TypeError(
         `Invalid serialized tx input: not an EIP-2930 transaction receipt (wrong tx type, expected: ${EIP2930_TRANSACTION_TYPE_BUFFER}, received: ${serialized
           .slice(0, 1)
           .toString('hex')}`
@@ -181,7 +166,7 @@ export class AccessListReceipt extends BaseReceipt {
     const values = rlp.decode(serialized.slice(1))
 
     if (!Array.isArray(values)) {
-      throw new Error('Invalid serialized rct input: must be array')
+      throw new TypeError('Invalid serialized rct input: must be array')
     }
 
     return AccessListReceipt.fromValuesArray(values as any)
@@ -204,18 +189,7 @@ export class AccessListReceipt extends BaseReceipt {
       logs
     ] = values
 
-    let postState: Buffer | undefined
-    let status: number | undefined
-    if (postStateOrStatus === RECEIPT_STATUS_FAILED_RLP) {
-      status = 0
-      postState = undefined
-    } else if (postStateOrStatus === RECEIPT_STATUS_SUCCESS_RLP) {
-      status = 1
-      postState = undefined
-    } else {
-      status = undefined
-      postState = postStateOrStatus
-    }
+    const [postState, status] = resolvePostStateOrStatus(postStateOrStatus)
 
     return new AccessListReceipt(
       {
@@ -230,15 +204,15 @@ export class AccessListReceipt extends BaseReceipt {
   }
 }
 
-export class DynamicFeeReceipt extends BaseReceipt {
+export class FeeMarketReceipt extends BaseReceipt {
   serialize (): Buffer {
     const base = this.raw()
     return Buffer.concat([EIP1559_TRANSACTION_TYPE_BUFFER, rlp.encode(base)])
   }
 
-  fromSerializedRct (serialized: Buffer): DynamicFeeReceipt {
+  public static fromSerializedRct (serialized: Buffer): FeeMarketReceipt {
     if (!serialized.slice(0, 1).equals(EIP1559_TRANSACTION_TYPE_BUFFER)) {
-      throw new Error(
+      throw new TypeError(
         `Invalid serialized tx input: not an EIP-1559 transaction receipt (wrong tx type, expected: ${EIP1559_TRANSACTION_TYPE_BUFFER}, received: ${serialized
           .slice(0, 1)
           .toString('hex')}`
@@ -247,16 +221,16 @@ export class DynamicFeeReceipt extends BaseReceipt {
     const values = rlp.decode(serialized.slice(1))
 
     if (!Array.isArray(values)) {
-      throw new Error('Invalid serialized rct input: must be array')
+      throw new TypeError('Invalid serialized rct input: must be array')
     }
 
-    return DynamicFeeReceipt.fromValuesArray(values as any)
+    return FeeMarketReceipt.fromValuesArray(values as any)
   }
 
   /**
-   * Create a DynamicFeeReceipt from a values array.
+   * Create a FeeMarketReceipt from a values array.
    */
-  public static fromValuesArray (values: ReceiptValuesArray): DynamicFeeReceipt {
+  public static fromValuesArray (values: ReceiptValuesArray): FeeMarketReceipt {
     if (values.length !== 4) {
       throw new Error(
         'Invalid receipt. Only expecting 4 values.'
@@ -270,20 +244,9 @@ export class DynamicFeeReceipt extends BaseReceipt {
       logs
     ] = values
 
-    let postState: Buffer | undefined
-    let status: number | undefined
-    if (postStateOrStatus === RECEIPT_STATUS_FAILED_RLP) {
-      status = 0
-      postState = undefined
-    } else if (postStateOrStatus === RECEIPT_STATUS_SUCCESS_RLP) {
-      status = 1
-      postState = undefined
-    } else {
-      status = undefined
-      postState = postStateOrStatus
-    }
+    const [postState, status] = resolvePostStateOrStatus(postStateOrStatus)
 
-    return new DynamicFeeReceipt(
+    return new FeeMarketReceipt(
       {
         TxType: 2,
         PostState: postState,
@@ -296,22 +259,38 @@ export class DynamicFeeReceipt extends BaseReceipt {
   }
 }
 
-/*
-public static fromSerializedTx(serialized: Buffer, opts: TxOptions = {}) {
-    if (!serialized.slice(0, 1).equals(TRANSACTION_TYPE_BUFFER)) {
-      throw new Error(
-        `Invalid serialized tx input: not an EIP-1559 transaction (wrong tx type, expected: ${TRANSACTION_TYPE}, received: ${serialized
-          .slice(0, 1)
-          .toString('hex')}`
-      )
+export class ReceiptFactory {
+  /**
+   * Decodes consensus encoding into the appropriate class
+   */
+  public static fromSerializedRct (serialized: Buffer): LegacyReceipt | AccessListReceipt | FeeMarketReceipt {
+    if (serialized[0] <= 0x7f) {
+      switch (serialized[0]) {
+        case 1:
+          return AccessListReceipt.fromSerializedRct(serialized)
+        case 2:
+          return FeeMarketReceipt.fromSerializedRct(serialized)
+        default:
+          throw new TypeError(`Unrecognized receipt tx type ${serialized[0]}`)
+      }
+    } else {
+      return LegacyReceipt.fromSerializedRct(serialized)
     }
-
-    const values = rlp.decode(serialized.slice(1))
-
-    if (!Array.isArray(values)) {
-      throw new Error('Invalid serialized tx input: must be array')
-    }
-
-    return FeeMarketEIP1559Transaction.fromValuesArray(values as any, opts)
   }
- */
+
+  /**
+   * Unpacks ReceiptData into the appropriate class
+   */
+  public static fromReceiptData (rctData: ReceiptData): LegacyReceipt | AccessListReceipt | FeeMarketReceipt {
+    switch (rctData.TxType) {
+      case 0 || undefined:
+        return new LegacyReceipt(rctData)
+      case 1:
+        return new AccessListReceipt(rctData)
+      case 2:
+        return new FeeMarketReceipt(rctData)
+      default:
+        throw new TypeError(`Unrecognized receipt tx type ${rctData.TxType}`)
+    }
+  }
+}
