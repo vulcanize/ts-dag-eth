@@ -74,7 +74,7 @@ export function prepare (node: any): Header {
   }
 
   if (node.StateRootCID == null) {
-    throw new TypeError('Invalid eth-header form; node.parentHash is null/undefined')
+    throw new TypeError('Invalid eth-header form; node.StateRootCID is null/undefined')
   } else if (typeof node.StateRootCID === 'string') {
     stateCID = CID.parse(node.StateRootCID)
   } else if (node.StateRootCID instanceof Uint8Array) {
@@ -88,7 +88,7 @@ export function prepare (node: any): Header {
   }
 
   if (node.TxRootCID == null) {
-    throw new TypeError('Invalid eth-header form; node.parentHash is null/undefined')
+    throw new TypeError('Invalid eth-header form; node.TxRootCID is null/undefined')
   } else if (typeof node.TxRootCID === 'string') {
     txCID = CID.parse(node.TxRootCID)
   } else if (node.TxRootCID instanceof Uint8Array) {
@@ -102,7 +102,7 @@ export function prepare (node: any): Header {
   }
 
   if (node.RctRootCID == null) {
-    throw new TypeError('Invalid eth-header form; node.parentHash is null/undefined')
+    throw new TypeError('Invalid eth-header form; node.RctRootCID is null/undefined')
   } else if (typeof node.RctRootCID === 'string') {
     rctCID = CID.parse(node.RctRootCID)
   } else if (node.RctRootCID instanceof Uint8Array) {
