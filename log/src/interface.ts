@@ -1,9 +1,27 @@
-type Topics = Uint8Array[];
-
-export type Logs = Log[];
+type Topics = Buffer[]
 
 export interface Log {
-    Address: Uint8Array,
+    Address: Buffer,
     Topics: Topics,
-    Data: Uint8Array
+    Data: Buffer
+}
+
+export type LogBuffer = [Buffer, Buffer[], Buffer]
+
+export type Logs = Log[]
+
+export type LogsBuffer = LogBuffer[]
+
+export function isLog (x: any): x is Log {
+  if ((x as Log).Address === undefined) {
+    return false
+  }
+  if ((x as Log).Topics === undefined) {
+    return false
+  }
+  if ((x as Log).Data === undefined) {
+    return false
+  }
+
+  return true
 }
