@@ -7,8 +7,8 @@ import { code as txTrieCode } from '../../tx_trie/src'
 import { code as rctTrieCode } from '../../rct_trie/src'
 import { code } from './index'
 
-export function unpackHeaderNode (node: Header): BlockHeader {
-  return BlockHeader.fromHeaderData({
+export function unpack (node: Header): BlockHeader {
+  const ethHeader: BlockHeader = BlockHeader.fromHeaderData({
     parentHash: hashFromCID(node.ParentCID),
     uncleHash: hashFromCID(node.UnclesCID),
     coinbase: node.Coinbase,
@@ -25,9 +25,15 @@ export function unpackHeaderNode (node: Header): BlockHeader {
     mixHash: node.MixDigest,
     nonce: node.Nonce
   })
+  if (typeof node.BaseFee !== 'undefined') {
+    Object.defineProperty(ethHeader, 'baseFeePerGas', {
+      value: node.BaseFee
+    })
+  }
+  return ethHeader
 }
 
-export function packHeaderNode (header: BlockHeader): Header {
+export function pack (header: BlockHeader): Header {
   const headerNode: Header = {
     ParentCID: cidFromHash(code, header.parentHash),
     UnclesCID: cidFromHash(unclesCode, header.uncleHash),
