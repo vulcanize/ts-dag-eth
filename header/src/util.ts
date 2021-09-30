@@ -13,7 +13,7 @@ const headerNodeProperties = ['ParentCID',
 
 export function prepare (node: any): Header {
   if (typeof node !== 'object' || Array.isArray(node)) {
-    throw new TypeError('Invalid eth-header form')
+    throw new TypeError('Invalid eth-block form')
   }
 
   let parentCID: CID
@@ -34,7 +34,7 @@ export function prepare (node: any): Header {
   let baseFeePerGas: BN | undefined
 
   if (node.ParentCID == null) {
-    throw new TypeError('Invalid eth-header form; node.ParentCID is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.ParentCID is null/undefined')
   } else if (typeof node.ParentCID === 'string') {
     parentCID = CID.parse(node.ParentCID)
   } else if (node.ParentCID instanceof Uint8Array) {
@@ -44,11 +44,11 @@ export function prepare (node: any): Header {
   } else if (CID.isCID(node.ParentCID)) {
     parentCID = node.ParentCID
   } else {
-    throw new TypeError('Invalid eth-header form; node.ParentCID needs to be of type CID')
+    throw new TypeError('Invalid eth-block form; node.ParentCID needs to be of type CID')
   }
 
   if (node.UnclesCID == null) {
-    throw new TypeError('Invalid eth-header form; node.UnclesCID is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.UnclesCID is null/undefined')
   } else if (typeof node.UnclesCID === 'string') {
     unclesCID = CID.parse(node.UnclesCID)
   } else if (node.UnclesCID instanceof Uint8Array) {
@@ -58,11 +58,11 @@ export function prepare (node: any): Header {
   } else if (CID.isCID(node.UnclesCID)) {
     unclesCID = node.UnclesCID
   } else {
-    throw new TypeError('Invalid eth-header form; node.UnclesCID needs to be of type CID')
+    throw new TypeError('Invalid eth-block form; node.UnclesCID needs to be of type CID')
   }
 
   if (node.Coinbase == null) {
-    throw new TypeError('Invalid eth-header form; node.Coinbase is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.Coinbase is null/undefined')
   } else if (typeof node.Coinbase === 'string') {
     coinbase = Address.fromString(node.Coinbase)
   } else if (node.Coinbase instanceof Uint8Array) {
@@ -70,11 +70,11 @@ export function prepare (node: any): Header {
   } else if (node.Coinbase instanceof Buffer) {
     coinbase = new Address(node.Coinbase)
   } else {
-    throw new TypeError('Invalid eth-header form; node.Coinbase needs to be of type Address')
+    throw new TypeError('Invalid eth-block form; node.Coinbase needs to be of type Address')
   }
 
   if (node.StateRootCID == null) {
-    throw new TypeError('Invalid eth-header form; node.StateRootCID is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.StateRootCID is null/undefined')
   } else if (typeof node.StateRootCID === 'string') {
     stateCID = CID.parse(node.StateRootCID)
   } else if (node.StateRootCID instanceof Uint8Array) {
@@ -84,11 +84,11 @@ export function prepare (node: any): Header {
   } else if (CID.isCID(node.StateRootCID)) {
     stateCID = node.StateRootCID
   } else {
-    throw new TypeError('Invalid eth-header form; node.StateRootCID needs to be of type CID')
+    throw new TypeError('Invalid eth-block form; node.StateRootCID needs to be of type CID')
   }
 
   if (node.TxRootCID == null) {
-    throw new TypeError('Invalid eth-header form; node.TxRootCID is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.TxRootCID is null/undefined')
   } else if (typeof node.TxRootCID === 'string') {
     txCID = CID.parse(node.TxRootCID)
   } else if (node.TxRootCID instanceof Uint8Array) {
@@ -98,11 +98,11 @@ export function prepare (node: any): Header {
   } else if (CID.isCID(node.TxRootCID)) {
     txCID = node.TxRootCID
   } else {
-    throw new TypeError('Invalid eth-header form; node.TxRootCID needs to be of type CID')
+    throw new TypeError('Invalid eth-block form; node.TxRootCID needs to be of type CID')
   }
 
   if (node.RctRootCID == null) {
-    throw new TypeError('Invalid eth-header form; node.RctRootCID is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.RctRootCID is null/undefined')
   } else if (typeof node.RctRootCID === 'string') {
     rctCID = CID.parse(node.RctRootCID)
   } else if (node.RctRootCID instanceof Uint8Array) {
@@ -112,11 +112,11 @@ export function prepare (node: any): Header {
   } else if (CID.isCID(node.RctRootCID)) {
     rctCID = node.RctRootCID
   } else {
-    throw new TypeError('Invalid eth-header form; node.RctRootCID needs to be of type CID')
+    throw new TypeError('Invalid eth-block form; node.RctRootCID needs to be of type CID')
   }
 
   if (node.Bloom == null) {
-    throw new TypeError('Invalid eth-header form; node.Bloom is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.Bloom is null/undefined')
   } else if (typeof node.Bloom === 'string') {
     bloom = Buffer.from(node.Bloom, 'hex')
   } else if (node.Bloom instanceof Uint8Array) {
@@ -124,66 +124,66 @@ export function prepare (node: any): Header {
   } else if (node.Bloom instanceof Buffer) {
     bloom = node.Bloom
   } else {
-    throw new TypeError('Invalid eth-header form; node.Bloom needs to be of type Buffer')
+    throw new TypeError('Invalid eth-block form; node.Bloom needs to be of type Buffer')
   }
 
   if (node.Difficulty == null) {
-    throw new TypeError('Invalid eth-header form; node.Difficulty is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.Difficulty is null/undefined')
   } else if (typeof node.Difficulty === 'string' || typeof node.Difficulty === 'number' || node.Difficulty instanceof Uint8Array ||
     node.Difficulty instanceof Buffer) {
     diff = new BN(node.Difficulty, 10)
   } else if (typeof node.Difficulty === 'bigint') {
     diff = new BN(node.Difficulty.toString(), 10)
   } else {
-    throw new TypeError('Invalid eth-header form; node.Difficulty needs to be of type BN')
+    throw new TypeError('Invalid eth-block form; node.Difficulty needs to be of type BN')
   }
 
   if (node.Number == null) {
-    throw new TypeError('Invalid eth-header form; node.Number is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.Number is null/undefined')
   } else if (typeof node.Number === 'string' || typeof node.Number === 'number' || node.Number instanceof Uint8Array ||
     node.Number instanceof Buffer) {
     number = new BN(node.Number, 10)
   } else if (typeof node.Number === 'bigint') {
     number = new BN(node.Number.toString(), 10)
   } else {
-    throw new TypeError('Invalid eth-header form; node.Number needs to be of type BN')
+    throw new TypeError('Invalid eth-block form; node.Number needs to be of type BN')
   }
 
   if (node.GasLimit == null) {
-    throw new TypeError('Invalid eth-header form; node.GasLimit is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.GasLimit is null/undefined')
   } else if (typeof node.GasLimit === 'string' || typeof node.GasLimit === 'number' || node.GasLimit instanceof Uint8Array ||
     node.GasLimit instanceof Buffer) {
     gasLimit = new BN(node.GasLimit, 10)
   } else if (typeof node.GasLimit === 'bigint') {
     gasLimit = new BN(node.GasLimit.toString(), 10)
   } else {
-    throw new TypeError('Invalid eth-header form; node.GasLimit needs to be of type BN')
+    throw new TypeError('Invalid eth-block form; node.GasLimit needs to be of type BN')
   }
 
   if (node.GasUsed == null) {
-    throw new TypeError('Invalid eth-header form; node.GasUsed is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.GasUsed is null/undefined')
   } else if (typeof node.GasUsed === 'string' || typeof node.GasUsed === 'number' || node.GasUsed instanceof Uint8Array ||
     node.GasUsed instanceof Buffer) {
     gasUsed = new BN(node.GasUsed, 10)
   } else if (typeof node.GasUsed === 'bigint') {
     gasUsed = new BN(node.GasUsed.toString(), 10)
   } else {
-    throw new TypeError('Invalid eth-header form; node.GasUsed needs to be of type BN')
+    throw new TypeError('Invalid eth-block form; node.GasUsed needs to be of type BN')
   }
 
   if (node.Time == null) {
-    throw new TypeError('Invalid eth-header form; node.Time is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.Time is null/undefined')
   } else if (typeof node.Time === 'string' || typeof node.Time === 'number' || node.Time instanceof Uint8Array ||
     node.Time instanceof Buffer) {
     timestamp = new BN(node.Time, 10)
   } else if (typeof node.Time === 'bigint') {
     timestamp = new BN(node.Time.toString(), 10)
   } else {
-    throw new TypeError('Invalid eth-header form; node.Time needs to be of type BN')
+    throw new TypeError('Invalid eth-block form; node.Time needs to be of type BN')
   }
 
   if (node.Extra == null) {
-    throw new TypeError('Invalid eth-header form; node.Extra is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.Extra is null/undefined')
   } else if (typeof node.Extra === 'string') {
     extraData = Buffer.from(node.Extra, 'hex')
   } else if (node.Extra instanceof Uint8Array) {
@@ -191,11 +191,11 @@ export function prepare (node: any): Header {
   } else if (node.Extra instanceof Buffer) {
     extraData = node.Extra
   } else {
-    throw new TypeError('Invalid eth-header form; node.Extra needs to be of type Buffer')
+    throw new TypeError('Invalid eth-block form; node.Extra needs to be of type Buffer')
   }
 
   if (node.MixDigest == null) {
-    throw new TypeError('Invalid eth-header form; node.MixDigest is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.MixDigest is null/undefined')
   } else if (typeof node.MixDigest === 'string') {
     mixHash = Buffer.from(node.MixDigest, 'hex')
   } else if (node.MixDigest instanceof Uint8Array) {
@@ -203,11 +203,11 @@ export function prepare (node: any): Header {
   } else if (node.MixDigest instanceof Buffer) {
     mixHash = node.MixDigest
   } else {
-    throw new TypeError('Invalid eth-header form; node.MixDigest needs to be of type Buffer')
+    throw new TypeError('Invalid eth-block form; node.MixDigest needs to be of type Buffer')
   }
 
   if (node.Nonce == null) {
-    throw new TypeError('Invalid eth-header form; node.Nonce is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.Nonce is null/undefined')
   } else if (typeof node.Nonce === 'string') {
     nonce = Buffer.from(node.Nonce, 'hex')
   } else if (node.Nonce instanceof Uint8Array) {
@@ -215,7 +215,7 @@ export function prepare (node: any): Header {
   } else if (node.Nonce instanceof Buffer) {
     nonce = node.Nonce
   } else {
-    throw new TypeError('Invalid eth-header form; node.Nonce needs to be of type Buffer')
+    throw new TypeError('Invalid eth-block form; node.Nonce needs to be of type Buffer')
   }
 
   if (node.BaseFee == null) {
@@ -226,7 +226,7 @@ export function prepare (node: any): Header {
   } else if (typeof node.BaseFee === 'bigint') {
     baseFeePerGas = new BN(node.BaseFee.toString(), 10)
   } else {
-    throw new TypeError('Invalid eth-header form; node.BaseFee needs to be of type BN')
+    throw new TypeError('Invalid eth-block form; node.BaseFee needs to be of type BN')
   }
 
   return {
@@ -251,106 +251,106 @@ export function prepare (node: any): Header {
 
 export function validate (node: Header) {
   if (!node || typeof node !== 'object' || Array.isArray(node)) {
-    throw new TypeError('Invalid eth-header form')
+    throw new TypeError('Invalid eth-block form')
   }
 
   if (!hasOnlyProperties(node, headerNodeProperties)) {
-    throw new TypeError('Invalid eth-header form (extraneous properties)')
+    throw new TypeError('Invalid eth-block form (extraneous properties)')
   }
 
   if (node.ParentCID == null) {
-    throw new TypeError('Invalid eth-header form; node.ParentCID is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.ParentCID is null/undefined')
   } else if (!CID.isCID(node.ParentCID)) {
-    throw new TypeError('Invalid eth-header form; node.ParentCID needs to be of type CID')
+    throw new TypeError('Invalid eth-block form; node.ParentCID needs to be of type CID')
   }
 
   if (node.UnclesCID == null) {
-    throw new TypeError('Invalid eth-header form; node.UnclesCID is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.UnclesCID is null/undefined')
   } else if (!CID.isCID(node.UnclesCID)) {
-    throw new TypeError('Invalid eth-header form; node.UnclesCID needs to be of type CID')
+    throw new TypeError('Invalid eth-block form; node.UnclesCID needs to be of type CID')
   }
 
   if (node.Coinbase == null) {
-    throw new TypeError('Invalid eth-header form; node.Coinbase is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.Coinbase is null/undefined')
   } else if (!(node.Coinbase instanceof Uint8Array)) {
-    throw new TypeError('Invalid eth-header form; node.Coinbase needs to be of type Uint8Array')
+    throw new TypeError('Invalid eth-block form; node.Coinbase needs to be of type Uint8Array')
   }
 
   if (node.StateRootCID == null) {
-    throw new TypeError('Invalid eth-header form; node.StateRootCID is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.StateRootCID is null/undefined')
   } else if (!CID.isCID(node.StateRootCID)) {
-    throw new TypeError('Invalid eth-header form; node.StateRootCID needs to be of type CID')
+    throw new TypeError('Invalid eth-block form; node.StateRootCID needs to be of type CID')
   }
 
   if (node.TxRootCID == null) {
-    throw new TypeError('Invalid eth-header form; node.TxRootCID is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.TxRootCID is null/undefined')
   } else if (!CID.isCID(node.TxRootCID)) {
-    throw new TypeError('Invalid eth-header form; node.TxRootCID needs to be of type CID')
+    throw new TypeError('Invalid eth-block form; node.TxRootCID needs to be of type CID')
   }
 
   if (node.RctRootCID == null) {
-    throw new TypeError('Invalid eth-header form; node.RctRootCID is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.RctRootCID is null/undefined')
   } else if (!CID.isCID(node.RctRootCID)) {
-    throw new TypeError('Invalid eth-header form; node.RctRootCID needs to be of type CID')
+    throw new TypeError('Invalid eth-block form; node.RctRootCID needs to be of type CID')
   }
 
   if (node.Bloom == null) {
-    throw new TypeError('Invalid eth-header form; node.Bloom is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.Bloom is null/undefined')
   } else if (!(node.Bloom instanceof Buffer)) {
-    throw new TypeError('Invalid eth-header form; node.Bloom needs to be of type Buffer')
+    throw new TypeError('Invalid eth-block form; node.Bloom needs to be of type Buffer')
   }
 
   if (node.Difficulty == null) {
-    throw new TypeError('Invalid eth-header form; node.Difficulty is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.Difficulty is null/undefined')
   } else if (!(node.Difficulty instanceof BN)) {
-    throw new TypeError('Invalid eth-header form; node.Difficulty needs to be of type BN')
+    throw new TypeError('Invalid eth-block form; node.Difficulty needs to be of type BN')
   }
 
   if (node.Number == null) {
-    throw new TypeError('Invalid eth-header form; node.Number is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.Number is null/undefined')
   } else if (!(node.Number instanceof BN)) {
-    throw new TypeError('Invalid eth-header form; node.Number needs to be of type BN')
+    throw new TypeError('Invalid eth-block form; node.Number needs to be of type BN')
   }
 
   if (node.GasLimit == null) {
-    throw new TypeError('Invalid eth-header form; node.GasLimit is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.GasLimit is null/undefined')
   } else if (!(node.GasLimit instanceof BN)) {
-    throw new TypeError('Invalid eth-header form; node.GasLimit needs to be of type BN')
+    throw new TypeError('Invalid eth-block form; node.GasLimit needs to be of type BN')
   }
 
   if (node.GasUsed == null) {
-    throw new TypeError('Invalid eth-header form; node.GasUsed is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.GasUsed is null/undefined')
   } else if (!(node.GasUsed instanceof BN)) {
-    throw new TypeError('Invalid eth-header form; node.GasUsed needs to be of type BN')
+    throw new TypeError('Invalid eth-block form; node.GasUsed needs to be of type BN')
   }
 
   if (node.Time == null) {
-    throw new TypeError('Invalid eth-header form; node.Time is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.Time is null/undefined')
   } else if (!(node.Time instanceof BN)) {
-    throw new TypeError('Invalid eth-header form; node.Time needs to be of type BN')
+    throw new TypeError('Invalid eth-block form; node.Time needs to be of type BN')
   }
 
   if (node.Extra == null) {
-    throw new TypeError('Invalid eth-header form; node.Extra is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.Extra is null/undefined')
   } else if (!(node.Extra instanceof Buffer)) {
-    throw new TypeError('Invalid eth-header form; node.Extra needs to be of type Buffer')
+    throw new TypeError('Invalid eth-block form; node.Extra needs to be of type Buffer')
   }
 
   if (node.MixDigest == null) {
-    throw new TypeError('Invalid eth-header form; node.MixDigest is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.MixDigest is null/undefined')
   } else if (!(node.MixDigest instanceof Buffer)) {
-    throw new TypeError('Invalid eth-header form; node.MixDigest needs to be of type Buffer')
+    throw new TypeError('Invalid eth-block form; node.MixDigest needs to be of type Buffer')
   }
 
   if (node.Nonce == null) {
-    throw new TypeError('Invalid eth-header form; node.Nonce is null/undefined')
+    throw new TypeError('Invalid eth-block form; node.Nonce is null/undefined')
   } else if (!(node.Nonce instanceof BN)) {
-    throw new TypeError('Invalid eth-header form; node.Nonce needs to be of type BN')
+    throw new TypeError('Invalid eth-block form; node.Nonce needs to be of type BN')
   }
 
   if (node.BaseFee === null) {
-    throw new TypeError('Invalid eth-header form; node.BaseFee is null')
+    throw new TypeError('Invalid eth-block form; node.BaseFee is null')
   } else if (!(node.BaseFee instanceof BN) && typeof node.BaseFee !== 'undefined') {
-    throw new TypeError('Invalid eth-header form; node.BaseFee needs to be of type BN or undefined')
+    throw new TypeError('Invalid eth-block form; node.BaseFee needs to be of type BN or undefined')
   }
 }
