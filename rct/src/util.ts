@@ -86,16 +86,16 @@ export function prepare (node: any): Receipt {
   }
 
   if (node.Logs == null) {
-    throw new TypeError('Invalid eth-tx-receipt form; node.Bloom is null/undefined')
+    throw new TypeError('Invalid eth-tx-receipt form; node.Logs is null/undefined')
   } else if (Array.isArray(node.Logs)) {
     for (const log of node.Logs) {
       if (!isLog(log)) {
-        throw new TypeError('Invalid eth-tx-receipt form; node.Bloom needs to be of type Logs')
+        throw new TypeError('Invalid eth-tx-receipt form; node.Logs needs to be of type Logs')
       }
     }
     logs = node.Logs
   } else {
-    throw new TypeError('Invalid eth-tx-receipt form; node.Bloom needs to be of type Logs')
+    throw new TypeError('Invalid eth-tx-receipt form; node.Logs needs to be of type Logs')
   }
 
   if (node.LogRootCID == null) {
@@ -123,17 +123,6 @@ export function prepare (node: any): Receipt {
   }
 }
 
-/*
-export interface Receipt {
-    TxType: number,
-    PostState?: Buffer,
-    Status?: number,
-    CumulativeGasUsed: BN,
-    Bloom: Buffer,
-    Logs: Logs,
-    LogRootCID: CID
-}
- */
 export function validate (node: Receipt) {
   if (!node || typeof node !== 'object' || Array.isArray(node)) {
     throw new TypeError('Invalid eth-tx-receipt form')
@@ -182,7 +171,7 @@ export function validate (node: Receipt) {
       }
     }
   } else {
-    throw new TypeError('Invalid eth-tx-receipt form; node.Logs needs to be an Array')
+    throw new TypeError('Invalid eth-tx-receipt form; node.Logs needs to be an Logs')
   }
 
   if (node.LogRootCID == null) {
