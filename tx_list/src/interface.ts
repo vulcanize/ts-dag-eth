@@ -1,3 +1,3 @@
-import { Transaction } from "../../tx/src/interface";
+import { Transaction } from '../../tx/src/interface'
 
 export type Transactions = Transaction[];
