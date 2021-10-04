@@ -1,3 +1,3 @@
-import { Header } from "../../header/src/interface";
+import { Header } from '../../header/src/interface'
 
 export type Uncles = Header[];

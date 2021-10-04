@@ -2,6 +2,7 @@
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
+    "downlevelIteration": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": false,
     "noImplicitAny": true,

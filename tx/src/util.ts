@@ -351,7 +351,7 @@ function validateAccessList (node: Transaction) {
         if (accessListElement.length !== 2) {
           throw new TypeError('Invalid eth-tx form; node.AccessList members needs to be Arrays of length 2')
         }
-        for (const [i, accessListElementElement] of accessListElement.entries()) {
+        accessListElement.forEach((accessListElementElement, i) => {
           if (i === 0) {
             if (!(accessListElementElement instanceof Buffer)) {
               throw new TypeError('Invalid eth-tx form; node.AccessList member first element needs to be a Buffer')
@@ -368,7 +368,7 @@ function validateAccessList (node: Transaction) {
               throw new TypeError('Invalid eth-tx form; node.AccessList member second element needs to be an Array of Buffers')
             }
           }
-        }
+        })
       } else {
         throw new TypeError('Invalid eth-tx form; node.AccessList members needs to be Arrays')
       }
