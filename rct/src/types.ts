@@ -294,3 +294,8 @@ export class ReceiptFactory {
     }
   }
 }
+
+export type TypedReceipt =
+  LegacyReceipt |
+  AccessListReceipt |
+  FeeMarketReceipt

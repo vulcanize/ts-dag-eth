@@ -1,5 +1,3 @@
-import { Receipt, RawReceipt } from "../../rct/src/interface";
+import { Receipt } from '../../rct/src/interface'
 
 export type Receipts = Receipt[];
-
-export type RawReceipts = RawReceipt[];
