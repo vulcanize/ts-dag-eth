@@ -1,9 +1,7 @@
 import { CID } from 'multiformats/cid'
-import { Account } from './interface'
+import { Account, accountNodeProperties } from './interface'
 import { hasOnlyProperties } from '../../util/src/util'
 import BN from 'bn.js'
-
-const accountNodeProperties = ['Nonce', 'Balance', 'StorageRootCID', 'CodeCID']
 
 export function prepare (node: any): Account {
   if (typeof node !== 'object' || Array.isArray(node)) {

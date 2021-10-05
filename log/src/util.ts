@@ -1,8 +1,6 @@
-import { Log } from './interface'
+import { Log, logNodeProperties } from './interface'
 import { hasOnlyProperties } from '../../util/src/util'
 const toBuffer = require('typedarray-to-buffer')
-
-const logNodeProperties = ['Address', 'Topics', 'Data']
 
 export function prepare (node: any): Log {
   let address: Buffer

@@ -1,13 +1,8 @@
-import { Transaction } from './interface'
+import { Transaction, txNodeProperties } from './interface'
 import { arrayToNumber, bufferToNumber, hasOnlyProperties } from '../../util/src/util'
 import BN from 'bn.js'
 import { Address } from 'ethereumjs-util'
 const toBuffer = require('typedarray-to-buffer')
-
-const txNodeProperties = ['TxType',
-  'ChainID', 'AccountNonce', 'GasPrice',
-  'GasTipCap', 'GasFeeCap', 'GasLimit', 'Recipient',
-  'Amount', 'Data', 'AccessList', 'V', 'R', 'S']
 
 function prepareBaseFields (node: any, txType: number): Transaction {
   let accountNonce: BN

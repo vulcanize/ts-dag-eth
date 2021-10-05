@@ -1,15 +1,9 @@
 import { CID } from 'multiformats/cid'
-import { Header } from './interface'
+import { Header, headerNodeProperties } from './interface'
 import { hasOnlyProperties } from '../../util/src/util'
 import BN from 'bn.js'
 import { Address } from 'ethereumjs-util'
 const toBuffer = require('typedarray-to-buffer')
-
-const headerNodeProperties = ['ParentCID',
-  'UnclesCID', 'Coinbase', 'StateRootCID',
-  'TxRootCID', 'RctRootCID', 'Bloom', 'Difficulty',
-  'Number', 'GasLimit', 'GasUsed', 'Time', 'Extra',
-  'MixDigest', 'Nonce', 'BaseFee']
 
 export function prepare (node: any): Header {
   if (typeof node !== 'object' || Array.isArray(node)) {

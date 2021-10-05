@@ -1,13 +1,9 @@
 import { CID } from 'multiformats/cid'
-import { Receipt } from './interface'
+import { rctNodeProperties, Receipt } from './interface'
 import { arrayToNumber, bufferToNumber, hasOnlyProperties } from '../../util/src/util'
 import BN from 'bn.js'
 import { isLog, Logs } from '../../log/src/interface'
 const toBuffer = require('typedarray-to-buffer')
-
-const rctNodeProperties = ['TxType',
-  'PostState', 'Status', 'CumulativeGasUsed',
-  'Bloom', 'Logs', 'LogRootCID']
 
 export function prepare (node: any): Receipt {
   let txType: number
