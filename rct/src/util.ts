@@ -98,10 +98,8 @@ export function prepare (node: any): Receipt {
     throw new TypeError('Invalid eth-tx-receipt form; node.LogRootCID is null/undefined')
   } else if (typeof node.LogRootCID === 'string') {
     lrc = CID.parse(node.LogRootCID)
-  } else if (node.LogRootCID instanceof Uint8Array) {
+  } else if (node.LogRootCID instanceof Uint8Array || node.LogRootCID instanceof Buffer) {
     lrc = CID.decode(node.LogRootCID)
-  } else if (node.LogRootCID instanceof Buffer) {
-    lrc = CID.decode(Uint8Array.from(node.LogRootCID))
   } else if (CID.isCID(node.LogRootCID)) {
     lrc = node.LogRootCID
   } else {
