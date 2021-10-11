@@ -1,3 +1,5 @@
+import { hasOnlyProperties } from '../../util/src/util'
+
 type Topics = Buffer[]
 
 export interface Log {
@@ -5,6 +7,8 @@ export interface Log {
     Topics: Topics,
     Data: Buffer
 }
+
+export const logNodeProperties = ['Address', 'Topics', 'Data']
 
 export type LogBuffer = [Buffer, Buffer[], Buffer]
 
@@ -22,6 +26,5 @@ export function isLog (x: any): x is Log {
   if ((x as Log).Data === undefined) {
     return false
   }
-
-  return true
+  return hasOnlyProperties(x, logNodeProperties)
 }

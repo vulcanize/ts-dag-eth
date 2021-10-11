@@ -1,8 +1,5 @@
-import { Log } from './interface'
-import { hasOnlyProperties } from '../../util/src/util'
+import { isLog, Log } from './interface'
 const toBuffer = require('typedarray-to-buffer')
-
-const logNodeProperties = ['Address', 'Topics', 'Data']
 
 export function prepare (node: any): Log {
   let address: Buffer
@@ -58,8 +55,8 @@ export function validate (node: Log) {
     throw new TypeError('Invalid eth-receipt-log form')
   }
 
-  if (!hasOnlyProperties(node, logNodeProperties)) {
-    throw new TypeError('Invalid eth-receipt-log form (extraneous properties)')
+  if (!isLog(node)) {
+    throw new TypeError('Invalid eth-receipt-log form')
   }
 
   if (node.Address == null) {

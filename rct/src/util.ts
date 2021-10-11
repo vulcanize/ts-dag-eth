@@ -1,13 +1,9 @@
 import { CID } from 'multiformats/cid'
-import { Receipt } from './interface'
-import { arrayToNumber, bufferToNumber, hasOnlyProperties } from '../../util/src/util'
+import { isReceipt, Receipt } from './interface'
+import { arrayToNumber, bufferToNumber } from '../../util/src/util'
 import BN from 'bn.js'
 import { isLog, Logs } from '../../log/src/interface'
 const toBuffer = require('typedarray-to-buffer')
-
-const rctNodeProperties = ['TxType',
-  'PostState', 'Status', 'CumulativeGasUsed',
-  'Bloom', 'Logs', 'LogRootCID']
 
 export function prepare (node: any): Receipt {
   let txType: number
@@ -36,27 +32,27 @@ export function prepare (node: any): Receipt {
     throw new TypeError('Invalid eth-tx-receipt form; either node.PostState or node.Status needs to be set')
   }
 
-  if (node.PostState === null) {
-    throw new TypeError('Invalid eth-tx-receipt form; node.PostState is null')
+  if (node.PostState == null) {
+    postState = undefined
   } else if (typeof node.PostState === 'string') {
     postState = Buffer.from(node.PostState, 'hex')
   } else if (node.PostState instanceof Uint8Array) {
     postState = toBuffer(node.PostState)
-  } else if (node.PostState instanceof Buffer || typeof node.PostState === 'undefined') {
+  } else if (node.PostState instanceof Buffer) {
     postState = node.PostState
   } else {
     throw new TypeError('Invalid eth-tx-receipt form; node.PostState needs to be of type Buffer')
   }
 
-  if (node.Status === null) {
-    throw new TypeError('Invalid eth-tx-receipt form; node.Status is null')
+  if (node.Status == null) {
+    status = undefined
   } else if (typeof node.Status === 'string' || typeof node.Status === 'bigint') {
     status = Number(node.Status)
   } else if (node.Status instanceof Uint8Array) {
     status = arrayToNumber(node.Status)
   } else if (node.Status instanceof Buffer) {
     status = bufferToNumber(node.Status)
-  } else if (typeof node.Status === 'number' || typeof node.Status === 'undefined') {
+  } else if (typeof node.Status === 'number') {
     status = node.Status
   } else {
     throw new TypeError('Invalid eth-tx-receipt form; node.Status needs to be of type number')
@@ -102,10 +98,8 @@ export function prepare (node: any): Receipt {
     throw new TypeError('Invalid eth-tx-receipt form; node.LogRootCID is null/undefined')
   } else if (typeof node.LogRootCID === 'string') {
     lrc = CID.parse(node.LogRootCID)
-  } else if (node.LogRootCID instanceof Uint8Array) {
+  } else if (node.LogRootCID instanceof Uint8Array || node.LogRootCID instanceof Buffer) {
     lrc = CID.decode(node.LogRootCID)
-  } else if (node.LogRootCID instanceof Buffer) {
-    lrc = CID.decode(Uint8Array.from(node.LogRootCID))
   } else if (CID.isCID(node.LogRootCID)) {
     lrc = node.LogRootCID
   } else {
@@ -128,8 +122,8 @@ export function validate (node: Receipt) {
     throw new TypeError('Invalid eth-tx-receipt form')
   }
 
-  if (!hasOnlyProperties(node, rctNodeProperties)) {
-    throw new TypeError('Invalid eth-tx-receipt form (extraneous properties)')
+  if (!isReceipt(node)) {
+    throw new TypeError('Invalid eth-tx-receipt form')
   }
 
   if (node.TxType == null) {
@@ -139,7 +133,7 @@ export function validate (node: Receipt) {
   }
 
   if (node.PostState === null) {
-    throw new TypeError('Invalid eth-tx-receipt form; node.PostState is null/undefined')
+    throw new TypeError('Invalid eth-tx-receipt form; node.PostState is null')
   } else if (!(node.PostState instanceof Buffer) && typeof node.PostState !== 'undefined') {
     throw new TypeError('Invalid eth-tx-receipt form; node.PostState needs to be of type Buffer or undefined')
   }

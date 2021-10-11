@@ -2,23 +2,24 @@ import { CID } from 'multiformats/cid'
 import { create } from 'multiformats/hashes/digest'
 import { CodecCode } from 'multicodec'
 import { keccak256, randomHex } from 'web3-utils'
+const toBuffer = require('typedarray-to-buffer')
 
 const version = 1
 const keccakMultihashCode = 0x1b
 
-export function cidFromHash (codec: CodecCode, rawhash: Uint8Array): CID {
+export function cidFromHash (codec: CodecCode, rawhash: Buffer): CID {
   const multihash = create(keccakMultihashCode, rawhash)
   return CID.create(version, codec, multihash)
 }
 
-export function hashFromCID (cid: CID): Uint8Array {
-  return cid.multihash.digest
+export function hashFromCID (cid: CID): Buffer {
+  return toBuffer(cid.multihash.digest)
 }
 
-export function randomHash (): Uint8Array {
+export function randomHash (): Buffer {
   const rnHex = randomHex(32)
   const randomHash = keccak256(rnHex)
-  return Uint8Array.from(Buffer.from(randomHash, 'hex'))
+  return Buffer.from(randomHash, 'hex')
 }
 
 export function bufferToBigInt (buf: Buffer): bigint {

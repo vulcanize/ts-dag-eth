@@ -1,15 +1,8 @@
 import { CID } from 'multiformats/cid'
-import { Header } from './interface'
-import { hasOnlyProperties } from '../../util/src/util'
+import { Header, isHeader } from './interface'
 import BN from 'bn.js'
 import { Address } from 'ethereumjs-util'
 const toBuffer = require('typedarray-to-buffer')
-
-const headerNodeProperties = ['ParentCID',
-  'UnclesCID', 'Coinbase', 'StateRootCID',
-  'TxRootCID', 'RctRootCID', 'Bloom', 'Difficulty',
-  'Number', 'GasLimit', 'GasUsed', 'Time', 'Extra',
-  'MixDigest', 'Nonce', 'BaseFee']
 
 export function prepare (node: any): Header {
   if (typeof node !== 'object' || Array.isArray(node)) {
@@ -37,10 +30,8 @@ export function prepare (node: any): Header {
     throw new TypeError('Invalid eth-block form; node.ParentCID is null/undefined')
   } else if (typeof node.ParentCID === 'string') {
     parentCID = CID.parse(node.ParentCID)
-  } else if (node.ParentCID instanceof Uint8Array) {
+  } else if (node.ParentCID instanceof Uint8Array || node.ParentCID instanceof Buffer) {
     parentCID = CID.decode(node.ParentCID)
-  } else if (node.ParentCID instanceof Buffer) {
-    parentCID = CID.decode(Uint8Array.from(node.ParentCID))
   } else if (CID.isCID(node.ParentCID)) {
     parentCID = node.ParentCID
   } else {
@@ -51,10 +42,8 @@ export function prepare (node: any): Header {
     throw new TypeError('Invalid eth-block form; node.UnclesCID is null/undefined')
   } else if (typeof node.UnclesCID === 'string') {
     unclesCID = CID.parse(node.UnclesCID)
-  } else if (node.UnclesCID instanceof Uint8Array) {
+  } else if (node.UnclesCID instanceof Uint8Array || node.UnclesCID instanceof Buffer) {
     unclesCID = CID.decode(node.UnclesCID)
-  } else if (node.UnclesCID instanceof Buffer) {
-    unclesCID = CID.decode(Uint8Array.from(node.UnclesCID))
   } else if (CID.isCID(node.UnclesCID)) {
     unclesCID = node.UnclesCID
   } else {
@@ -77,10 +66,8 @@ export function prepare (node: any): Header {
     throw new TypeError('Invalid eth-block form; node.StateRootCID is null/undefined')
   } else if (typeof node.StateRootCID === 'string') {
     stateCID = CID.parse(node.StateRootCID)
-  } else if (node.StateRootCID instanceof Uint8Array) {
+  } else if (node.StateRootCID instanceof Uint8Array || node.StateRootCID instanceof Buffer) {
     stateCID = CID.decode(node.StateRootCID)
-  } else if (node.StateRootCID instanceof Buffer) {
-    stateCID = CID.decode(Uint8Array.from(node.StateRootCID))
   } else if (CID.isCID(node.StateRootCID)) {
     stateCID = node.StateRootCID
   } else {
@@ -91,10 +78,8 @@ export function prepare (node: any): Header {
     throw new TypeError('Invalid eth-block form; node.TxRootCID is null/undefined')
   } else if (typeof node.TxRootCID === 'string') {
     txCID = CID.parse(node.TxRootCID)
-  } else if (node.TxRootCID instanceof Uint8Array) {
+  } else if (node.TxRootCID instanceof Uint8Array || node.TxRootCID instanceof Buffer) {
     txCID = CID.decode(node.TxRootCID)
-  } else if (node.TxRootCID instanceof Buffer) {
-    txCID = CID.decode(Uint8Array.from(node.TxRootCID))
   } else if (CID.isCID(node.TxRootCID)) {
     txCID = node.TxRootCID
   } else {
@@ -105,10 +90,8 @@ export function prepare (node: any): Header {
     throw new TypeError('Invalid eth-block form; node.RctRootCID is null/undefined')
   } else if (typeof node.RctRootCID === 'string') {
     rctCID = CID.parse(node.RctRootCID)
-  } else if (node.RctRootCID instanceof Uint8Array) {
+  } else if (node.RctRootCID instanceof Uint8Array || node.RctRootCID instanceof Buffer) {
     rctCID = CID.decode(node.RctRootCID)
-  } else if (node.RctRootCID instanceof Buffer) {
-    rctCID = CID.decode(Uint8Array.from(node.RctRootCID))
   } else if (CID.isCID(node.RctRootCID)) {
     rctCID = node.RctRootCID
   } else {
@@ -254,8 +237,8 @@ export function validate (node: Header) {
     throw new TypeError('Invalid eth-block form')
   }
 
-  if (!hasOnlyProperties(node, headerNodeProperties)) {
-    throw new TypeError('Invalid eth-block form (extraneous properties)')
+  if (!isHeader(node)) {
+    throw new TypeError('Invalid eth-block form')
   }
 
   if (node.ParentCID == null) {
@@ -272,8 +255,8 @@ export function validate (node: Header) {
 
   if (node.Coinbase == null) {
     throw new TypeError('Invalid eth-block form; node.Coinbase is null/undefined')
-  } else if (!(node.Coinbase instanceof Uint8Array)) {
-    throw new TypeError('Invalid eth-block form; node.Coinbase needs to be of type Uint8Array')
+  } else if (!(node.Coinbase instanceof Address)) {
+    throw new TypeError('Invalid eth-block form; node.Coinbase needs to be of type Address')
   }
 
   if (node.StateRootCID == null) {

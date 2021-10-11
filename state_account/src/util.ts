@@ -1,9 +1,6 @@
 import { CID } from 'multiformats/cid'
-import { Account } from './interface'
-import { hasOnlyProperties } from '../../util/src/util'
+import { Account, isAccount } from './interface'
 import BN from 'bn.js'
-
-const accountNodeProperties = ['Nonce', 'Balance', 'StorageRootCID', 'CodeCID']
 
 export function prepare (node: any): Account {
   if (typeof node !== 'object' || Array.isArray(node)) {
@@ -41,7 +38,7 @@ export function prepare (node: any): Account {
     throw new TypeError('Invalid eth-account-snapshot form; node.StorageRootCID is null/undefined')
   } else if (typeof node.StorageRootCID === 'string') {
     srCID = CID.parse(node.StorageRootCID)
-  } else if (node.StorageRootCID instanceof Uint8Array) {
+  } else if (node.StorageRootCID instanceof Uint8Array || node.StorageRootCID instanceof Buffer) {
     srCID = CID.decode(node.StorageRootCID)
   } else if (CID.isCID(node.StorageRootCID)) {
     srCID = node.StorageRootCID
@@ -53,7 +50,7 @@ export function prepare (node: any): Account {
     throw new TypeError('Invalid eth-account-snapshot form; node.CodeCID is null/undefined')
   } else if (typeof node.CodeCID === 'string') {
     codeCID = CID.parse(node.CodeCID)
-  } else if (node.CodeCID instanceof Uint8Array) {
+  } else if (node.CodeCID instanceof Uint8Array || node.CodeCID instanceof Buffer) {
     codeCID = CID.decode(node.CodeCID)
   } else if (CID.isCID(node.CodeCID)) {
     codeCID = node.CodeCID
@@ -74,8 +71,8 @@ export function validate (node: Account) {
     throw new TypeError('Invalid eth-account-snapshot form')
   }
 
-  if (!hasOnlyProperties(node, accountNodeProperties)) {
-    throw new TypeError('Invalid eth-account-snapshot form (extraneous properties)')
+  if (!isAccount(node)) {
+    throw new TypeError('Invalid eth-account-snapshot form')
   }
 
   if (node.Nonce == null) {
