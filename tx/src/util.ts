@@ -1,7 +1,8 @@
-import { Transaction, txNodeProperties } from './interface'
-import { arrayToNumber, bufferToNumber, hasOnlyProperties } from '../../util/src/util'
+import { isTransaction, Transaction } from './interface'
+import { arrayToNumber, bufferToNumber } from '../../util/src/util'
 import BN from 'bn.js'
 import { Address } from 'ethereumjs-util'
+import { AccessListBuffer } from '@ethereumjs/tx'
 const toBuffer = require('typedarray-to-buffer')
 
 function prepareBaseFields (node: any, txType: number): Transaction {
@@ -173,7 +174,7 @@ function prepareAccessListTx (node: any): Transaction {
   const gasPrice = prepareGasPrice(node)
   const chainID = prepareChainID(node)
   const baseTx = prepareBaseFields(node, 1)
-  validateAccessList(node)
+  const accessList = prepareAccessList(node)
 
   return {
     TxType: baseTx.TxType,
@@ -184,7 +185,7 @@ function prepareAccessListTx (node: any): Transaction {
     Recipient: baseTx.Recipient,
     Amount: baseTx.Amount,
     Data: baseTx.Data,
-    AccessList: node.AccessList,
+    AccessList: accessList,
     V: baseTx.V,
     R: baseTx.R,
     S: baseTx.S
@@ -197,7 +198,7 @@ function prepareFeeMarketTx (node: any): Transaction {
 
   const chainID = prepareChainID(node)
   const baseTx = prepareBaseFields(node, 2)
-  validateAccessList(node)
+  const accessList = prepareAccessList(node)
 
   if (node.GasTipCap == null) {
     throw new TypeError('Invalid eth-tx form; node.GasTipCap is null/undefined')
@@ -231,7 +232,7 @@ function prepareFeeMarketTx (node: any): Transaction {
     Recipient: baseTx.Recipient,
     Amount: baseTx.Amount,
     Data: baseTx.Data,
-    AccessList: node.AccessList,
+    AccessList: accessList,
     V: baseTx.V,
     R: baseTx.R,
     S: baseTx.S
@@ -337,37 +338,52 @@ function validateChainID (node: Transaction) {
   }
 }
 
+function validateAccessListElements (accessList: Array<any>) {
+  for (const accessListElement of accessList) {
+    if (accessListElement instanceof Array) {
+      if (accessListElement.length !== 2) {
+        throw new TypeError('Invalid eth-tx form; node.AccessList members needs to be Arrays of length 2')
+      }
+      accessListElement.forEach((accessListElementElement, i) => {
+        if (i === 0) {
+          if (!(accessListElementElement instanceof Buffer)) {
+            throw new TypeError('Invalid eth-tx form; node.AccessList member first element needs to be a Buffer')
+          }
+        }
+        if (i === 1) {
+          if (accessListElementElement instanceof Array) {
+            for (const accessListElementElementElement of accessListElementElement) {
+              if (!(accessListElementElementElement instanceof Buffer)) {
+                throw new TypeError('Invalid eth-tx form; node.AccessList member second element needs to be an Array of Buffers')
+              }
+            }
+          } else {
+            throw new TypeError('Invalid eth-tx form; node.AccessList member second element needs to be an Array of Buffers')
+          }
+        }
+      })
+    } else {
+      throw new TypeError('Invalid eth-tx form; node.AccessList members needs to be Arrays')
+    }
+  }
+}
+
+function prepareAccessList (node: any): AccessListBuffer | undefined {
+  if (node.AccessList == null) {
+    return undefined
+  } else if (node.AccessList instanceof Array) {
+    validateAccessListElements(node.AccessList)
+    return node.AccessList
+  } else {
+    throw new TypeError('Invalid eth-tx form; node.AccessList needs to be an Array or undefined')
+  }
+}
+
 function validateAccessList (node: Transaction) {
   if (node.AccessList === null) {
     throw new TypeError('Invalid eth-tx form; node.AccessList is null')
   } else if (node.AccessList instanceof Array) {
-    for (const accessListElement of node.AccessList) {
-      if (accessListElement instanceof Array) {
-        if (accessListElement.length !== 2) {
-          throw new TypeError('Invalid eth-tx form; node.AccessList members needs to be Arrays of length 2')
-        }
-        accessListElement.forEach((accessListElementElement, i) => {
-          if (i === 0) {
-            if (!(accessListElementElement instanceof Buffer)) {
-              throw new TypeError('Invalid eth-tx form; node.AccessList member first element needs to be a Buffer')
-            }
-          }
-          if (i === 1) {
-            if (accessListElementElement instanceof Array) {
-              for (const accessListElementElementElement of accessListElementElement) {
-                if (!(accessListElementElementElement instanceof Buffer)) {
-                  throw new TypeError('Invalid eth-tx form; node.AccessList member second element needs to be an Array of Buffers')
-                }
-              }
-            } else {
-              throw new TypeError('Invalid eth-tx form; node.AccessList member second element needs to be an Array of Buffers')
-            }
-          }
-        })
-      } else {
-        throw new TypeError('Invalid eth-tx form; node.AccessList members needs to be Arrays')
-      }
-    }
+    validateAccessListElements(node.AccessList)
   } else if (node.AccessList !== undefined) {
     throw new TypeError('Invalid eth-tx form; node.AccessList needs to be an Array or undefined')
   }
@@ -407,8 +423,8 @@ export function validate (node: Transaction) {
     throw new TypeError('Invalid eth-tx form')
   }
 
-  if (!hasOnlyProperties(node, txNodeProperties)) {
-    throw new TypeError('Invalid eth-tx form (extraneous properties)')
+  if (!isTransaction(node)) {
+    throw new TypeError('Invalid eth-tx form')
   }
 
   let txType: number

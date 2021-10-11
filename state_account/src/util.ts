@@ -1,6 +1,5 @@
 import { CID } from 'multiformats/cid'
-import { Account, accountNodeProperties } from './interface'
-import { hasOnlyProperties } from '../../util/src/util'
+import { Account, isAccount } from './interface'
 import BN from 'bn.js'
 
 export function prepare (node: any): Account {
@@ -72,8 +71,8 @@ export function validate (node: Account) {
     throw new TypeError('Invalid eth-account-snapshot form')
   }
 
-  if (!hasOnlyProperties(node, accountNodeProperties)) {
-    throw new TypeError('Invalid eth-account-snapshot form (extraneous properties)')
+  if (!isAccount(node)) {
+    throw new TypeError('Invalid eth-account-snapshot form')
   }
 
   if (node.Nonce == null) {

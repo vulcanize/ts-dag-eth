@@ -1,6 +1,5 @@
 import { CID } from 'multiformats/cid'
-import { Header, headerNodeProperties } from './interface'
-import { hasOnlyProperties } from '../../util/src/util'
+import { Header, isHeader } from './interface'
 import BN from 'bn.js'
 import { Address } from 'ethereumjs-util'
 const toBuffer = require('typedarray-to-buffer')
@@ -238,8 +237,8 @@ export function validate (node: Header) {
     throw new TypeError('Invalid eth-block form')
   }
 
-  if (!hasOnlyProperties(node, headerNodeProperties)) {
-    throw new TypeError('Invalid eth-block form (extraneous properties)')
+  if (!isHeader(node)) {
+    throw new TypeError('Invalid eth-block form')
   }
 
   if (node.ParentCID == null) {
