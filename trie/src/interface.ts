@@ -46,7 +46,7 @@ export type TrieBranchNodeValuesArray = [
   Buffer | Buffer[],
 ]
 
-const branchNodeProperties = [
+export const branchNodeProperties = [
   'Child0',
   'Child1',
   'Child2',
@@ -80,7 +80,7 @@ export type TrieExtensionNodeValuesArray = [
   Buffer,
 ]
 
-const extensionNodeProperties = [
+export const extensionNodeProperties = [
   'PartialPath',
   'Child'
 ]
@@ -105,7 +105,7 @@ export type TrieLeafNodeValuesArray = [
   Buffer | Buffer[],
 ]
 
-const leafNodeProperties = [
+export const leafNodeProperties = [
   'PartialPath',
   'Value'
 ]
