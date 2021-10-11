@@ -1,75 +1,76 @@
-import { CID } from "multiformats/cid";
-import { Log } from "../../log/src/interface";
+import { CID } from 'multiformats/cid'
+import { Log } from '../../log/src/interface'
+import { Nibbles } from 'merkle-patricia-tree/dist/trieNode'
+import { hasOnlyProperties } from '../../util/src/util'
+import { extensionNodeProperties, leafNodeProperties, branchNodeProperties } from '../../trie/src/interface'
 
 export interface TrieBranchNode {
-    Child0?: Child,
-    Child1?: Child,
-    Child2?: Child,
-    Child3?: Child,
-    Child4?: Child,
-    Child5?: Child,
-    Child6?: Child,
-    Child7?: Child,
-    Child8?: Child,
-    Child9?: Child,
-    ChildA?: Child,
-    ChildB?: Child,
-    ChildC?: Child,
-    ChildD?: Child,
-    ChildE?: Child,
-    ChildF?: Child,
-    Value?: Log
+  Child0?: Child,
+  Child1?: Child,
+  Child2?: Child,
+  Child3?: Child,
+  Child4?: Child,
+  Child5?: Child,
+  Child6?: Child,
+  Child7?: Child,
+  Child8?: Child,
+  Child9?: Child,
+  ChildA?: Child,
+  ChildB?: Child,
+  ChildC?: Child,
+  ChildD?: Child,
+  ChildE?: Child,
+  ChildF?: Child,
+  Value?: Log
 }
 
-export interface RawTrieBranchNode {
-    Child0?: RawChild,
-    Child1?: RawChild,
-    Child2?: RawChild,
-    Child3?: RawChild,
-    Child4?: RawChild,
-    Child5?: RawChild,
-    Child6?: RawChild,
-    Child7?: RawChild,
-    Child8?: RawChild,
-    Child9?: RawChild,
-    ChildA?: RawChild,
-    ChildB?: RawChild,
-    ChildC?: RawChild,
-    ChildD?: RawChild,
-    ChildE?: RawChild,
-    ChildF?: RawChild,
-    Value?: Log
+export function isTrieBranchNode (x: any): x is TrieBranchNode {
+  return hasOnlyProperties(x, branchNodeProperties)
 }
 
 export interface TrieExtensionNode {
-    PartialPath: Uint8Array,
-    Child: CID
+  PartialPath: Nibbles,
+  Child: CID
 }
 
-export interface RawTrieExtensionNode {
-    PartialPath: Uint8Array,
-    Child: Uint8Array
+export function isTrieExtensionNode (x: any): x is TrieExtensionNode {
+  if ((x as TrieExtensionNode).PartialPath === undefined) {
+    return false
+  }
+  if ((x as TrieExtensionNode).Child === undefined) {
+    return false
+  }
+  return hasOnlyProperties(x, extensionNodeProperties)
 }
 
 export interface TrieLeafNode {
-    PartialPath: Uint8Array,
-    Value: Log
+  PartialPath: Nibbles,
+  Value: Log
+}
+
+export function isTrieLeafNode (x: any): x is TrieLeafNode {
+  if ((x as TrieLeafNode).PartialPath === undefined) {
+    return false
+  }
+  if ((x as TrieLeafNode).Value === undefined) {
+    return false
+  }
+  return hasOnlyProperties(x, leafNodeProperties)
 }
 
 export type TrieNode =
-    | TrieBranchNode
-    | TrieExtensionNode
-    | TrieLeafNode;
+  | TrieBranchNode
+  | TrieExtensionNode
+  | TrieLeafNode;
 
-export type RawTrieNode =
-    | RawTrieBranchNode
-    | RawTrieExtensionNode
-    | TrieLeafNode;
+export function isTrieNode (x: any): x is TrieNode {
+  return isTrieBranchNode(x) || isTrieExtensionNode(x) || isTrieLeafNode(x)
+}
 
 export type Child =
-    | TrieNode
-    | CID;
+  | TrieLeafNode
+  | CID;
 
-export type RawChild =
-    | RawTrieNode
-    | Uint8Array;
+export function isChild (x: any): x is Child {
+  return isTrieLeafNode(x) || CID.isCID(x)
+}
