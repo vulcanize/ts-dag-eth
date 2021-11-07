@@ -41,30 +41,32 @@ function prepareBaseFields (node: any, txType: number): Transaction {
     recipient = undefined
   } else if (typeof node.Recipient === 'string') {
     recipient = Address.fromString(node.Recipient)
-  } else if (node.Recipient instanceof Uint8Array) {
-    recipient = new Address(node.Recipient.buffer)
+  } else if (node.Recipient instanceof Uint8Array || (Array.isArray(node.Recipient) && node.Recipient.every((item: any) => typeof item === 'number'))) {
+    recipient = new Address(toBuffer(node.Recipient))
   } else if (node.Recipient instanceof Buffer) {
     recipient = new Address(node.Recipient)
+  } else if (node.Recipient instanceof Address) {
+    recipient = node.Recipient
   } else {
     throw new TypeError('Invalid eth-tx form; node.Recipient needs to be of type Address or undefined')
   }
 
-  if (node.Value == null) {
-    throw new TypeError('Invalid eth-tx form; node.Value is null/undefined')
-  } else if (typeof node.Value === 'string' || typeof node.Value === 'number' || node.Value instanceof Uint8Array ||
-    node.Value instanceof Buffer) {
-    amount = new BN(node.Value, 10)
-  } else if (typeof node.Value === 'bigint') {
-    amount = new BN(node.Value.toString(), 10)
+  if (node.Amount == null) {
+    throw new TypeError('Invalid eth-tx form; node.Amount is null/undefined')
+  } else if (typeof node.Amount === 'string' || typeof node.Amount === 'number' || node.Amount instanceof Uint8Array ||
+    node.Amount instanceof Buffer) {
+    amount = new BN(node.Amount, 10)
+  } else if (typeof node.Amount === 'bigint') {
+    amount = new BN(node.Amount.toString(), 10)
   } else {
-    throw new TypeError('Invalid eth-tx form; node.Value needs to be of type BN')
+    throw new TypeError('Invalid eth-tx form; node.Amount needs to be of type BN')
   }
 
   if (node.Data == null) {
     throw new TypeError('Invalid eth-tx form; node.Data is null/undefined')
   } else if (typeof node.Data === 'string') {
     data = Buffer.from(node.Data, 'hex')
-  } else if (node.Data instanceof Uint8Array) {
+  } else if (node.Data instanceof Uint8Array || (Array.isArray(node.Data) && node.Data.every((item: any) => typeof item === 'number'))) {
     data = toBuffer(node.Data)
   } else if (node.Data instanceof Buffer) {
     data = node.Data

@@ -54,7 +54,8 @@ export function prepareLeafNode (code: CodecCode, node: any): TrieLeafNode {
     value = node.Value
   } else if (typeof node.Value === 'string' && code === storageCode) {
     value = Buffer.from(node.Value, 'hex')
-  } else if (node.Value instanceof Uint8Array && code === storageCode) {
+  } else if ((node.Value instanceof Uint8Array ||
+    (Array.isArray(node.Value) && node.Value.every((item: any) => typeof item === 'number'))) && code === storageCode) {
     value = toBuffer(node.Value)
   } else {
     throw new TypeError('Invalid eth-trie-node leaf form; node.Value needs to the correct Value type for the given trie')
@@ -236,7 +237,7 @@ export function validateBranchNode (code: CodecCode, node: TrieBranchNode) {
 
   if (node.Value === null) {
     throw new TypeError('Invalid eth-trie-node branch form; node.Value is null')
-  } else if (!((isLog(node.Value) && code === logCode) ||
+  } else if (!((isLog(node.Value) && code === logCode) || // TODO: switch to using validate
     (isReceipt(node.Value) && code === rctCode) ||
     (isTransaction(node.Value) && code === txCode) ||
     (isAccount(node.Value) && code === accountCode) ||

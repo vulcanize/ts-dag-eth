@@ -1,8 +1,9 @@
 import { Log, LogBuffer, Logs, LogsBuffer } from './interface'
+import { Address } from 'ethereumjs-util'
 
 export function convertLogToLogBuffer (log: Log): LogBuffer {
   const logBuffer: LogBuffer = [
-    log.Address,
+    log.Address.toBuffer(),
     log.Topics,
     log.Data
   ]
@@ -18,7 +19,7 @@ export function convertLogsToLogsBuffer (logs: Logs): LogsBuffer {
 
 export function convertLogBufferToLog (logBuffer: LogBuffer): Log {
   const log: Log = {
-    Address: logBuffer[0],
+    Address: new Address(logBuffer[0]),
     Topics: logBuffer[1],
     Data: logBuffer[2]
   }
