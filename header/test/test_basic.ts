@@ -10,10 +10,13 @@ import { code as stateTrieCode } from '../../state_trie/src'
 import { code as txTrieCode } from '../../tx_trie/src'
 import { code as rctTrieCode } from '../../rct_trie/src'
 import { cidFromHash } from '../../util/src/util'
+import { CID } from 'multiformats/cid'
+import { Address } from 'ethereumjs-util'
+import BN from 'bn.js'
 
 const { assert } = chai
 const test = it
-const same = assert.deepStrictEqual
+const same = assert.deepEqual
 
 /*
 export interface Header {
@@ -36,8 +39,11 @@ export interface Header {
 }
 */
 
+const blockRLPFileName = 'block1_rlp'
+
 describe('eth-block', function () {
-  const blockRLP = fs.readFileSync('./block1_rlp')
+  const dirname = __dirname.concat('/', blockRLPFileName)
+  const blockRLP = fs.readFileSync(dirname)
   const block: Block = Block.fromRLPSerializedBlock(blockRLP)
   const header: BlockHeader = block.header
   const headerRLP = header.serialize()
@@ -71,7 +77,40 @@ describe('eth-block', function () {
   test('prepare and validate', () => {
     expect(() => validate(anyHeader as any)).to.throw()
     const preparedHeader = prepare(anyHeader)
-    same(preparedHeader, expectedHeaderNode)
+    for (const [k, v] of Object.entries(expectedHeaderNode)) {
+      if (Object.prototype.hasOwnProperty.call(preparedHeader, k)) {
+        const actualVal = preparedHeader[k as keyof Header]
+        if (v instanceof CID) {
+          if (actualVal instanceof CID) {
+            assert.equal(actualVal.toString(), v.toString(), ` actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
+          } else {
+            throw new TypeError(`key ${k} expected to be of type CID`)
+          }
+        } else if (v instanceof Address) {
+          if (actualVal instanceof Address) {
+            assert.equal(actualVal.toString(), v.toString(), ` actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
+          } else {
+            throw new TypeError(`key ${k} expected to be of type Address`)
+          }
+        } else if (v instanceof Buffer) {
+          if (actualVal instanceof Buffer) {
+            assert(v.equals(actualVal), `actual ${k}: ${actualVal} does not equal expected: ${v}`)
+          } else {
+            throw new TypeError(`key ${k} expected to be of type Buffer`)
+          }
+        } else if (v instanceof BN) {
+          if (actualVal instanceof BN) {
+            assert.equal(v.toNumber(), actualVal.toNumber(), `actual ${k}: ${actualVal.toNumber()} does not equal expected: ${v.toNumber()}`)
+          } else {
+            throw new TypeError(`key ${k} expected to be of type BN`)
+          }
+        } else {
+          assert.equal(preparedHeader[k as keyof Header], v, `actual ${k}: ${preparedHeader[k as keyof Header]} does not equal expected: ${v}`)
+        }
+      } else {
+        throw new Error(`key ${k} found in expectedHeaderNode is not found in the preparedHeader`)
+      }
+    }
     expect(() => validate(preparedHeader)).to.not.throw()
   })
 })

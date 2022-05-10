@@ -329,8 +329,8 @@ export function validate (node: Header) {
 
   if (node.Nonce == null) {
     throw new TypeError('Invalid eth-block form; node.Nonce is null/undefined')
-  } else if (!(node.Nonce instanceof BN)) {
-    throw new TypeError('Invalid eth-block form; node.Nonce needs to be of type BN')
+  } else if (!(node.Nonce instanceof Buffer)) {
+    throw new TypeError('Invalid eth-block form; node.Nonce needs to be of type Buffer')
   }
 
   if (node.BaseFee === null) {
