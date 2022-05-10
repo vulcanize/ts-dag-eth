@@ -18,27 +18,6 @@ const { assert } = chai
 const test = it
 const same = assert.deepEqual
 
-/*
-export interface Header {
-    ParentCID: CID,
-    UnclesCID: CID,
-    Coinbase: Address,
-    StateRootCID: CID,
-    TxRootCID: CID,
-    RctRootCID: CID,
-    Bloom: Buffer,
-    Difficulty: BN,
-    Number: BN,
-    GasLimit: BN,
-    GasUsed: BN,
-    Time: BN,
-    Extra: Buffer,
-    MixDigest: Buffer,
-    Nonce: Buffer,
-    BaseFee?: BN
-}
-*/
-
 const blockRLPFileName = 'block1_rlp'
 
 describe('eth-block', function () {
@@ -82,13 +61,13 @@ describe('eth-block', function () {
         const actualVal = preparedHeader[k as keyof Header]
         if (v instanceof CID) {
           if (actualVal instanceof CID) {
-            assert.equal(actualVal.toString(), v.toString(), ` actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
+            assert.equal(actualVal.toString(), v.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
           } else {
             throw new TypeError(`key ${k} expected to be of type CID`)
           }
         } else if (v instanceof Address) {
           if (actualVal instanceof Address) {
-            assert.equal(actualVal.toString(), v.toString(), ` actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
+            assert.equal(actualVal.toString(), v.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
           } else {
             throw new TypeError(`key ${k} expected to be of type Address`)
           }

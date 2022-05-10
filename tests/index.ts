@@ -6,6 +6,9 @@ describe('utils', () => {
 describe('eth-header', () => {
   require('../header/test/test_basic.ts')
 })
+describe('eth-log', () => {
+  require('../log/test/test_basic.ts')
+})
 /*
 describe('eth-rct', () => {
   require('../rct/test/test_basic.ts')
@@ -15,9 +18,6 @@ describe('eth-tx', () => {
 })
 describe('eth-rct', () => {
   require('../rct/test/test_basic.ts')
-})
-describe('eth-log', () => {
-  require('../log/test/test_basic.ts')
 })
 describe('eth-account', () => {
   require('../state_account/test/test_basic.ts')

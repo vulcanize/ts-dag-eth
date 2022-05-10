@@ -1,7 +1,7 @@
 import { hasOnlyProperties } from '../../util/src/util'
 import { Address } from 'ethereumjs-util'
 
-type Topics = Buffer[]
+export type Topics = Buffer[]
 
 export interface Log {
     Address: Address,
