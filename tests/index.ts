@@ -9,10 +9,10 @@ describe('eth-header', () => {
 describe('eth-log', () => {
   require('../log/test/test_basic.ts')
 })
-/*
 describe('eth-rct', () => {
   require('../rct/test/test_basic.ts')
 })
+/*
 describe('eth-tx', () => {
   require('../tx/test/test_basic.ts')
 })
