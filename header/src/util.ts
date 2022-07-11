@@ -114,6 +114,8 @@ export function prepare (node: any): Header {
 
   if (node.Difficulty == null) {
     throw new TypeError('Invalid eth-block form; node.Difficulty is null/undefined')
+  } else if (node.Difficulty instanceof BN) {
+    diff = node.Difficulty
   } else if (typeof node.Difficulty === 'string' || typeof node.Difficulty === 'number' || node.Difficulty instanceof Uint8Array ||
     node.Difficulty instanceof Buffer) {
     diff = new BN(node.Difficulty, 10)
@@ -125,6 +127,8 @@ export function prepare (node: any): Header {
 
   if (node.Number == null) {
     throw new TypeError('Invalid eth-block form; node.Number is null/undefined')
+  } else if (node.Number instanceof BN) {
+    number = node.Nonce
   } else if (typeof node.Number === 'string' || typeof node.Number === 'number' || node.Number instanceof Uint8Array ||
     node.Number instanceof Buffer) {
     number = new BN(node.Number, 10)
@@ -136,6 +140,8 @@ export function prepare (node: any): Header {
 
   if (node.GasLimit == null) {
     throw new TypeError('Invalid eth-block form; node.GasLimit is null/undefined')
+  } else if (node.GasLimit instanceof BN) {
+    gasLimit = node.GasLimit
   } else if (typeof node.GasLimit === 'string' || typeof node.GasLimit === 'number' || node.GasLimit instanceof Uint8Array ||
     node.GasLimit instanceof Buffer) {
     gasLimit = new BN(node.GasLimit, 10)
@@ -147,6 +153,8 @@ export function prepare (node: any): Header {
 
   if (node.GasUsed == null) {
     throw new TypeError('Invalid eth-block form; node.GasUsed is null/undefined')
+  } else if (node.GasUsed instanceof BN) {
+    gasUsed = node.GasUsed
   } else if (typeof node.GasUsed === 'string' || typeof node.GasUsed === 'number' || node.GasUsed instanceof Uint8Array ||
     node.GasUsed instanceof Buffer) {
     gasUsed = new BN(node.GasUsed, 10)
@@ -158,6 +166,8 @@ export function prepare (node: any): Header {
 
   if (node.Time == null) {
     throw new TypeError('Invalid eth-block form; node.Time is null/undefined')
+  } else if (node.Time instanceof BN) {
+    timestamp = node.Time
   } else if (typeof node.Time === 'string' || typeof node.Time === 'number' || node.Time instanceof Uint8Array ||
     node.Time instanceof Buffer) {
     timestamp = new BN(node.Time, 10)
@@ -205,6 +215,8 @@ export function prepare (node: any): Header {
 
   if (node.BaseFee == null) {
     baseFeePerGas = undefined
+  } else if (node.BaseFee instanceof BN) {
+    baseFeePerGas = node.BaseFee
   } else if (typeof node.BaseFee === 'string' || typeof node.BaseFee === 'number' || node.BaseFee instanceof Uint8Array ||
     node.BaseFee instanceof Buffer) {
     baseFeePerGas = new BN(node.BaseFee, 10)

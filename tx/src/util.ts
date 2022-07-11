@@ -17,6 +17,8 @@ function prepareBaseFields (node: any, txType: number): Transaction {
 
   if (node.AccountNonce == null) {
     throw new TypeError('Invalid eth-tx form; node.AccountNonce is null/undefined')
+  } else if (node.AccountNonce instanceof BN) {
+    accountNonce = node.AccountNonce
   } else if (typeof node.AccountNonce === 'string' || typeof node.AccountNonce === 'number' || node.AccountNonce instanceof Uint8Array ||
     node.AccountNonce instanceof Buffer) {
     accountNonce = new BN(node.AccountNonce, 10)
@@ -28,6 +30,8 @@ function prepareBaseFields (node: any, txType: number): Transaction {
 
   if (node.GasLimit == null) {
     throw new TypeError('Invalid eth-tx form; node.GasLimit is null/undefined')
+  } else if (node.GasLimit instanceof BN) {
+    gasLimit = node.GasLimit
   } else if (typeof node.GasLimit === 'string' || typeof node.GasLimit === 'number' || node.GasLimit instanceof Uint8Array ||
     node.GasLimit instanceof Buffer) {
     gasLimit = new BN(node.GasLimit, 10)
@@ -53,6 +57,8 @@ function prepareBaseFields (node: any, txType: number): Transaction {
 
   if (node.Amount == null) {
     throw new TypeError('Invalid eth-tx form; node.Amount is null/undefined')
+  } else if (node.Amount instanceof BN) {
+    amount = node.Amount
   } else if (typeof node.Amount === 'string' || typeof node.Amount === 'number' || node.Amount instanceof Uint8Array ||
     node.Amount instanceof Buffer) {
     amount = new BN(node.Amount, 10)
@@ -76,6 +82,8 @@ function prepareBaseFields (node: any, txType: number): Transaction {
 
   if (node.V == null) {
     throw new TypeError('Invalid eth-tx form; node.V is null/undefined')
+  } else if (node.V instanceof BN) {
+    v = node.V
   } else if (typeof node.V === 'string' || typeof node.V === 'number' || node.V instanceof Uint8Array ||
     node.V instanceof Buffer) {
     v = new BN(node.V, 10)
@@ -87,6 +95,8 @@ function prepareBaseFields (node: any, txType: number): Transaction {
 
   if (node.R == null) {
     throw new TypeError('Invalid eth-tx form; node.R is null/undefined')
+  } else if (node.R instanceof BN) {
+    r = node.R
   } else if (typeof node.R === 'string' || typeof node.R === 'number' || node.R instanceof Uint8Array ||
     node.R instanceof Buffer) {
     r = new BN(node.R, 10)
@@ -98,6 +108,8 @@ function prepareBaseFields (node: any, txType: number): Transaction {
 
   if (node.S == null) {
     throw new TypeError('Invalid eth-tx form; node.S is null/undefined')
+  } else if (node.S instanceof BN) {
+    s = node.S
   } else if (typeof node.S === 'string' || typeof node.S === 'number' || node.S instanceof Uint8Array ||
     node.S instanceof Buffer) {
     s = new BN(node.S, 10)
@@ -120,17 +132,19 @@ function prepareBaseFields (node: any, txType: number): Transaction {
   }
 }
 
-function prepareGasPrice (node: any): BN {
-  let gasPrice: BN
+function prepareGasPrice (node: any): BN | undefined {
+  let gasPrice: BN | undefined
 
-  if (node.GasPrice == null) {
-    throw new TypeError('Invalid eth-tx form; node.GasPrice is null/undefined')
+  if (node.GasPrice === null) {
+    throw new TypeError('Invalid eth-tx form; node.GasPrice is null')
+  } else if (node.GasPrice instanceof BN) {
+    gasPrice = node.GasPrice
   } else if (typeof node.GasPrice === 'string' || typeof node.GasPrice === 'number' || node.GasPrice instanceof Uint8Array ||
     node.GasPrice instanceof Buffer) {
     gasPrice = new BN(node.GasPrice, 10)
   } else if (typeof node.GasPrice === 'bigint') {
     gasPrice = new BN(node.GasPrice.toString(), 10)
-  } else {
+  } else if (typeof node.GasPrice !== 'undefined') {
     throw new TypeError('Invalid eth-tx form; node.GasPrice needs to be of type BN')
   }
 
@@ -142,6 +156,8 @@ function prepareChainID (node: any): BN {
 
   if (node.ChainID == null) {
     throw new TypeError('Invalid eth-tx form; node.ChainID is null/undefined')
+  } else if (node.ChainID instanceof BN) {
+    chainID = node.ChainID
   } else if (typeof node.ChainID === 'string' || typeof node.ChainID === 'number' || node.ChainID instanceof Uint8Array ||
     node.ChainID instanceof Buffer) {
     chainID = new BN(node.ChainID, 10)
@@ -204,6 +220,8 @@ function prepareFeeMarketTx (node: any): Transaction {
 
   if (node.GasTipCap == null) {
     throw new TypeError('Invalid eth-tx form; node.GasTipCap is null/undefined')
+  } else if (node.GasTipCap instanceof BN) {
+    gasTipCap = node.GasTipCap
   } else if (typeof node.GasTipCap === 'string' || typeof node.GasTipCap === 'number' || node.GasTipCap instanceof Uint8Array ||
     node.GasTipCap instanceof Buffer) {
     gasTipCap = new BN(node.GasTipCap, 10)
@@ -215,6 +233,8 @@ function prepareFeeMarketTx (node: any): Transaction {
 
   if (node.GasFeeCap == null) {
     throw new TypeError('Invalid eth-tx form; node.GasFeeCap is null/undefined')
+  } else if (node.GasFeeCap instanceof BN) {
+    gasFeeCap = node.GasFeeCap
   } else if (typeof node.GasFeeCap === 'string' || typeof node.GasFeeCap === 'number' || node.GasFeeCap instanceof Uint8Array ||
     node.GasFeeCap instanceof Buffer) {
     gasFeeCap = new BN(node.GasFeeCap, 10)

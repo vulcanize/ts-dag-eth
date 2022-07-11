@@ -18,7 +18,7 @@ const accessListRctFileName = 'access_list_rct_enc'
 const dynamicFeeRctFileName = 'dynamic_fee_rct_enc'
 const legacyRctFileName = 'legacy_rct_enc'
 
-describe('eth-log', function () {
+describe('eth-tx-receipt', function () {
   const accessListRctFilePath = __dirname.concat('/', accessListRctFileName)
   const dynamicFeeRctFilePath = __dirname.concat('/', dynamicFeeRctFileName)
   const legacyRctFilePath = __dirname.concat('/', legacyRctFileName)
@@ -127,7 +127,7 @@ function testValidate (anyRct: any, expectedRct: Receipt) {
         assert.equal(preparedAccessListRct[k as keyof Receipt], v, `actual ${k}: ${preparedAccessListRct[k as keyof Receipt]} does not equal expected: ${v}`)
       }
     } else {
-      throw new Error(`key ${k} found in expectedAccessListRct is not found in the preparedAccessListRct`)
+      throw new Error(`key ${k} found in expectedRct is not found in the preparedRct`)
     }
   }
   expect(() => validate(preparedAccessListRct)).to.not.throw()

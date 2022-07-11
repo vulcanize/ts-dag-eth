@@ -61,6 +61,8 @@ export function prepare (node: any): Receipt {
 
   if (node.CumulativeGasUsed == null) {
     throw new TypeError('Invalid eth-tx-receipt form; node.CumulativeGasUsed is null/undefined')
+  } else if (node.CumulativeGasUsed instanceof BN) {
+    cgu = node.CumulativeGasUsed
   } else if (typeof node.CumulativeGasUsed === 'string' || typeof node.CumulativeGasUsed === 'number' || node.CumulativeGasUsed instanceof Uint8Array ||
     node.CumulativeGasUsed instanceof Buffer) {
     cgu = new BN(node.CumulativeGasUsed, 10)

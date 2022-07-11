@@ -8,7 +8,8 @@ export const name = 'eth-tx'
 export const code = 0x93
 
 export function encode (node: Transaction): ByteView<Transaction> {
-  return unpack(node).serialize()
+  const unpackedTx = unpack(node)
+  return unpackedTx.serialize()
 }
 
 export function decode (bytes: ByteView<Transaction>): Transaction {
