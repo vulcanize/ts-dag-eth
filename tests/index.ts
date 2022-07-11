@@ -18,3 +18,6 @@ describe('eth-account', () => {
 describe('eth-tx', () => {
   require('../tx/test/test_basic.ts')
 })
+describe('eth-uncles', () => {
+  require('../uncles/test/test_basic')
+})
