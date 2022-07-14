@@ -21,3 +21,23 @@ describe('eth-tx', () => {
 describe('eth-uncles', () => {
   require('../uncles/test/test_basic')
 })
+describe('eth-trie', () => {
+  require('../trie/test/test_basic')
+})
+/*
+describe('eth-log-trie', () => {
+  require('../log_trie/test/test_basic')
+})
+describe('eth-rct-trie', () => {
+  require('../rct_trie/test/test_basic')
+})
+describe('eth-tx-trie', () => {
+  require('../tx_trie/test/test_basic')
+})
+describe('eth-state-trie', () => {
+  require('../state_trie/test/test_basic')
+})
+describe('eth-storage-trie', () => {
+  require('../storage_trie/test/test_basic')
+})
+ */

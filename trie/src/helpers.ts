@@ -113,7 +113,7 @@ export function unpackLeafNode (raw: Buffer[]): TrieLeafNode {
       Value: raw[1]
     }
   } else {
-    throw new Error('node is expected to be a leaf node')
+    throw new Error('node is expected to be a leaf node but partial path does not have a terminator')
   }
 }
 
@@ -122,7 +122,7 @@ export function unpackChild (code: CodecCode, raw: Buffer): Child | undefined {
     if (raw.length === 2) {
       return unpackLeafNode(raw)
     } else {
-      throw new Error('leaf node child should be a two member array')
+      throw new Error('leaf node child should either be a two member byte array (embedded leaf node) or raw bytes (hash of child leaf node)')
     }
   }
   if (Buffer.compare(raw, Buffer.from(''))) {

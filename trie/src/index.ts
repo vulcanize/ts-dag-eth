@@ -24,7 +24,10 @@ export function decode (code: CodecCode, bytes: ByteView<TrieNode>): TrieNode {
   }
   if (decoded.length === 17) { // is a branch node
     return unpackBranchNode(code, decoded)
+  } else if (decoded.length === 2) {
+    // is either an extension or leaf
+    return unpackTwoMemberNode(code, decoded)
+  } else {
+    throw new Error('TrieNode is expected to be a 2 or 17 member array')
   }
-  // is either an extension or leaf
-  return unpackTwoMemberNode(code, decoded)
 }
