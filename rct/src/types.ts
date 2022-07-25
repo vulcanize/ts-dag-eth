@@ -283,7 +283,9 @@ export class ReceiptFactory {
    */
   public static fromReceiptData (rctData: ReceiptData): LegacyReceipt | AccessListReceipt | FeeMarketReceipt {
     switch (rctData.TxType) {
-      case 0 || undefined:
+      case undefined:
+        return new LegacyReceipt(rctData)
+      case 0:
         return new LegacyReceipt(rctData)
       case 1:
         return new AccessListReceipt(rctData)

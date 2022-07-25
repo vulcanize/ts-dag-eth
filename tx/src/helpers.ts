@@ -23,7 +23,8 @@ export function unpack (node: Transaction): TypedTransaction {
       v: node.V,
       r: node.R,
       s: node.S,
-      type: node.TxType
+      type: node.TxType,
+      to: node.Recipient
     }
     if (typeof node.GasPrice !== 'undefined') {
       Object.defineProperty(legacyTx, 'gasPrice', {
@@ -46,7 +47,8 @@ export function unpack (node: Transaction): TypedTransaction {
       r: node.R,
       s: node.S,
       type: node.TxType,
-      accessList: node.AccessList
+      accessList: node.AccessList,
+      to: node.Recipient
     }
     if (typeof node.Recipient !== 'undefined') {
       Object.defineProperty(accessListTx, 'to', {
@@ -74,7 +76,8 @@ export function unpack (node: Transaction): TypedTransaction {
       r: node.R,
       s: node.S,
       type: node.TxType,
-      accessList: node.AccessList
+      accessList: node.AccessList,
+      to: node.Recipient
     }
     if (typeof node.Recipient !== 'undefined') {
       Object.defineProperty(dynamicFeeTx, 'to', {
@@ -139,13 +142,13 @@ function unpackLegacyTx (legacyTx: LegacyTransaction): Transaction {
     R: new BN('0', 10),
     S: new BN('0', 10)
   }
-  checkSig(legacyTx)
+  checkSig(tx, legacyTx)
   return tx
 }
 
 function unpackAccessListTx (alTx: AccessListEIP2930Transaction): Transaction {
   const tx: Transaction = {
-    TxType: 0,
+    TxType: 1,
     AccountNonce: alTx.nonce,
     GasPrice: alTx.gasPrice,
     GasLimit: alTx.gasLimit,
@@ -158,13 +161,13 @@ function unpackAccessListTx (alTx: AccessListEIP2930Transaction): Transaction {
     ChainID: alTx.chainId,
     AccessList: alTx.accessList
   }
-  checkSig(alTx)
+  checkSig(tx, alTx)
   return tx
 }
 
 function unpackFeeMarketTx (fmTx: FeeMarketEIP1559Transaction): Transaction {
   const tx: Transaction = {
-    TxType: 0,
+    TxType: 2,
     AccountNonce: fmTx.nonce,
     GasLimit: fmTx.gasLimit,
     Amount: fmTx.value,
@@ -178,28 +181,28 @@ function unpackFeeMarketTx (fmTx: FeeMarketEIP1559Transaction): Transaction {
     GasTipCap: fmTx.maxPriorityFeePerGas,
     GasFeeCap: fmTx.maxFeePerGas
   }
-  checkSig(fmTx)
+  checkSig(tx, fmTx)
   return tx
 }
 
-function checkSig (tx: LegacyTransaction | FeeMarketEIP1559Transaction | AccessListEIP2930Transaction) {
-  if (typeof tx.v !== 'undefined') {
+function checkSig (tx: Transaction, fmTx: LegacyTransaction | FeeMarketEIP1559Transaction | AccessListEIP2930Transaction) {
+  if (typeof fmTx.v !== 'undefined') {
     Object.defineProperty(tx, 'V', {
-      value: tx.v
+      value: fmTx.v
     })
   } else {
     throw Error('transaction IPLD must have V')
   }
-  if (typeof tx.r !== 'undefined') {
+  if (typeof fmTx.r !== 'undefined') {
     Object.defineProperty(tx, 'R', {
-      value: tx.r
+      value: fmTx.r
     })
   } else {
     throw Error('transaction IPLD must have R')
   }
-  if (typeof tx.s !== 'undefined') {
+  if (typeof fmTx.s !== 'undefined') {
     Object.defineProperty(tx, 'S', {
-      value: tx.s
+      value: fmTx.s
     })
   } else {
     throw Error('transaction IPLD must have S')

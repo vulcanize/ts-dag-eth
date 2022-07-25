@@ -14,6 +14,8 @@ export function prepare (node: any): Account {
 
   if (node.Nonce == null) {
     throw new TypeError('Invalid eth-account-snapshot form; node.Nonce is null/undefined')
+  } else if (node.Nonce instanceof BN) {
+    nonce = node.Nonce
   } else if (typeof node.Nonce === 'string' || typeof node.Nonce === 'number' || node.Nonce instanceof Uint8Array ||
     node.Nonce instanceof Buffer) {
     nonce = new BN(node.Nonce, 10)
@@ -25,6 +27,8 @@ export function prepare (node: any): Account {
 
   if (node.Balance == null) {
     throw new TypeError('Invalid eth-account-snapshot form; node.Balance is null/undefined')
+  } else if (node.Balance instanceof BN) {
+    balance = node.Balance
   } else if (typeof node.Balance === 'string' || typeof node.Balance === 'number' || node.Balance instanceof Uint8Array ||
     node.Balance instanceof Buffer) {
     balance = new BN(node.Balance, 10)

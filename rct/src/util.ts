@@ -2,7 +2,8 @@ import { CID } from 'multiformats/cid'
 import { isReceipt, Receipt } from './interface'
 import { arrayToNumber, bufferToNumber } from '../../util/src/util'
 import BN from 'bn.js'
-import { isLog, Logs } from '../../log/src/interface'
+import { Logs, Log } from '../../log/src/interface'
+import { validate as logValidate, prepare as logPrepare } from '../../log/src/util'
 const toBuffer = require('typedarray-to-buffer')
 
 export function prepare (node: any): Receipt {
@@ -36,7 +37,7 @@ export function prepare (node: any): Receipt {
     postState = undefined
   } else if (typeof node.PostState === 'string') {
     postState = Buffer.from(node.PostState, 'hex')
-  } else if (node.PostState instanceof Uint8Array) {
+  } else if (node.PostState instanceof Uint8Array || (Array.isArray(node.PostState) && node.PostState.every((item: any) => typeof item === 'number'))) {
     postState = toBuffer(node.PostState)
   } else if (node.PostState instanceof Buffer) {
     postState = node.PostState
@@ -60,6 +61,8 @@ export function prepare (node: any): Receipt {
 
   if (node.CumulativeGasUsed == null) {
     throw new TypeError('Invalid eth-tx-receipt form; node.CumulativeGasUsed is null/undefined')
+  } else if (node.CumulativeGasUsed instanceof BN) {
+    cgu = node.CumulativeGasUsed
   } else if (typeof node.CumulativeGasUsed === 'string' || typeof node.CumulativeGasUsed === 'number' || node.CumulativeGasUsed instanceof Uint8Array ||
     node.CumulativeGasUsed instanceof Buffer) {
     cgu = new BN(node.CumulativeGasUsed, 10)
@@ -73,7 +76,7 @@ export function prepare (node: any): Receipt {
     throw new TypeError('Invalid eth-tx-receipt form; node.Bloom is null/undefined')
   } else if (typeof node.Bloom === 'string') {
     bloom = Buffer.from(node.Bloom, 'hex')
-  } else if (node.Bloom instanceof Uint8Array) {
+  } else if (node.Bloom instanceof Uint8Array || (Array.isArray(node.Bloom) && node.Bloom.every((item: any) => typeof item === 'number'))) {
     bloom = toBuffer(node.Bloom)
   } else if (node.Bloom instanceof Buffer) {
     bloom = node.Bloom
@@ -84,12 +87,10 @@ export function prepare (node: any): Receipt {
   if (node.Logs == null) {
     throw new TypeError('Invalid eth-tx-receipt form; node.Logs is null/undefined')
   } else if (Array.isArray(node.Logs)) {
-    for (const log of node.Logs) {
-      if (!isLog(log)) {
-        throw new TypeError('Invalid eth-tx-receipt form; node.Logs needs to be of type Logs')
-      }
+    logs = new Array<Log>(node.Logs.length)
+    for (const [i, log] of node.Logs.entries()) {
+      logs[i] = logPrepare(log)
     }
-    logs = node.Logs
   } else {
     throw new TypeError('Invalid eth-tx-receipt form; node.Logs needs to be of type Logs')
   }
@@ -160,9 +161,7 @@ export function validate (node: Receipt) {
     throw new TypeError('Invalid eth-tx-receipt form; node.Logs is null/undefined')
   } else if (Array.isArray(node.Logs)) {
     for (const log of node.Logs) {
-      if (!isLog(log)) {
-        throw new TypeError('Invalid eth-tx-receipt form; node.Logs needs to be of type Logs')
-      }
+      logValidate(log)
     }
   } else {
     throw new TypeError('Invalid eth-tx-receipt form; node.Logs needs to be an Logs')
