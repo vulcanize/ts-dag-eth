@@ -4,15 +4,19 @@ import {
   isTrieExtensionNode,
   isTrieBranchNode,
   isTrieLeafNode,
+  TrieBranchNode,
   TrieExtensionNode,
   TrieLeafNode,
   TrieNode
 } from '../src/interface'
 import { prepare, validate } from '../src/util'
 import * as fs from 'fs'
-import { unpackBranchNode, unpackTwoMemberNode } from '../src/helpers'
+import { packBranchNode, packTwoMemberNode } from '../src/helpers'
 import { code } from '../../storage_trie/src/'
+import { addHexPrefix } from 'merkle-patricia-tree/dist/util/hex'
 import { rlp } from 'ethereumjs-util'
+import { CID } from 'multiformats/cid'
+import { nibblesToBuffer } from '../../util/src/util'
 
 const { assert } = chai
 const test = it
@@ -31,50 +35,52 @@ describe('eth-trie', function () {
   const leafNodeRLP = fs.readFileSync(storageLeafFilePath)
 
   const extensionNodeBuffer = rlp.decode(extensionNodeRLP)
-  assert(Array.isArray(extensionNodeBuffer))
+  assert.isTrue(Array.isArray(extensionNodeBuffer), 'extension node buffer is not an array')
   assert(extensionNodeBuffer.length === 2)
-  const expectedExtension = unpackTwoMemberNode(code, extensionNodeBuffer as any)
-  assert(isTrieExtensionNode(expectedExtension))
+  const expectedExtension = packTwoMemberNode(code, extensionNodeBuffer as any)
+  assert.isTrue(isTrieExtensionNode(expectedExtension), 'expected extension node does not satisfy extension node interface')
   const expectedExtensionNode = <TrieExtensionNode>expectedExtension
+  const nodePathCopy = Object.assign([], expectedExtensionNode.PartialPath)
+  const prefixedPath = addHexPrefix(nodePathCopy, false)
   const anyExtensionNode: any = {
-    PartialPath: expectedExtensionNode.PartialPath.toString(),
+    PartialPath: nibblesToBuffer(prefixedPath),
     Child: expectedExtensionNode.Child.toString()
   }
 
   const leafNodeBuffer = rlp.decode(leafNodeRLP)
-  assert(Array.isArray(leafNodeBuffer))
+  assert(Array.isArray(leafNodeBuffer), 'leaf node buffer is not an array')
   assert(leafNodeBuffer.length === 2)
-  const expectedLeaf = unpackTwoMemberNode(code, leafNodeBuffer as any)
-  assert(isTrieLeafNode(expectedLeaf))
-  const expectedLeafNode = <TrieLeafNode>expectedExtension
+  const expectedLeaf = packTwoMemberNode(code, leafNodeBuffer as any)
+  assert(isTrieLeafNode(expectedLeaf), 'expected leaf node does not satisfy leaf node interface')
+  const expectedLeafNode = <TrieLeafNode>expectedLeaf
   const anyLeafNode: any = {
     PartialPath: expectedLeafNode.PartialPath.toString(),
-    Value: expectedLeafNode.Value.toString()
+    Value: expectedLeafNode.Value
   }
 
   const branchNodeBuffer = rlp.decode(branchNodeRLP)
-  assert(Array.isArray(branchNodeBuffer))
+  assert(Array.isArray(branchNodeBuffer), 'branch node buffer is not an array')
   assert(branchNodeBuffer.length === 17)
-  const expectedBranchNode = unpackBranchNode(code, branchNodeBuffer as any)
-  assert(isTrieBranchNode(expectedBranchNode))
+  const expectedBranchNode = packBranchNode(code, branchNodeBuffer as any)
+  assert(isTrieBranchNode(expectedBranchNode), 'expected branch node does not satisfy branch node interface')
   const anyBranchNode: any = {
-    Child0: expectedBranchNode.Child0,
-    Child1: expectedBranchNode.Child1,
-    Child2: expectedBranchNode.Child2,
-    Child3: expectedBranchNode.Child3,
-    Child4: expectedBranchNode.Child4,
-    Child5: expectedBranchNode.Child5,
-    Child6: expectedBranchNode.Child6,
-    Child7: expectedBranchNode.Child7,
-    Child8: expectedBranchNode.Child8,
-    Child9: expectedBranchNode.Child9,
-    ChildA: expectedBranchNode.ChildA,
-    ChildB: expectedBranchNode.ChildB,
-    ChildC: expectedBranchNode.ChildC,
-    ChildD: expectedBranchNode.ChildD,
-    ChildE: expectedBranchNode.ChildE,
-    ChildF: expectedBranchNode.ChildF,
-    Value: expectedBranchNode.Value
+    Child0: branchNodeBuffer[0],
+    Child1: branchNodeBuffer[1],
+    Child2: branchNodeBuffer[2],
+    Child3: branchNodeBuffer[3],
+    Child4: branchNodeBuffer[4],
+    Child5: branchNodeBuffer[5],
+    Child6: branchNodeBuffer[6],
+    Child7: branchNodeBuffer[7],
+    Child8: branchNodeBuffer[8],
+    Child9: branchNodeBuffer[9],
+    ChildA: branchNodeBuffer[10],
+    ChildB: branchNodeBuffer[11],
+    ChildC: branchNodeBuffer[12],
+    ChildD: branchNodeBuffer[13],
+    ChildE: branchNodeBuffer[14],
+    ChildF: branchNodeBuffer[15],
+    Value: branchNodeBuffer[16]
   }
 
   test('encode and decode round trip', () => {
@@ -103,27 +109,94 @@ describe('eth-trie', function () {
 
 function testValidate (anyTrieNode: any, expectedTrieNode: TrieNode) {
   expect(() => validate(code, anyTrieNode as any)).to.throw()
-  const preparedTrieNode: TrieNode = prepare(code, anyTrieNode)
-  for (const [k, v] of Object.entries(expectedTrieNode)) {
-    if (Object.prototype.hasOwnProperty.call(preparedTrieNode, k)) {
-      const actualVal = preparedTrieNode[k as keyof TrieNode]
-      if (Array.isArray(v)) {
-        if (Array.isArray(actualVal)) {
-          assert.equal(v.length, actualVal.length, `actual ${k} length: ${actualVal.length} does not equal expected: ${v.length}`)
+  const preparedTrieNode = prepare(code, anyTrieNode)
+  if (isTrieBranchNode(preparedTrieNode)) {
+    for (const [k, v] of Object.entries(expectedTrieNode)) {
+      if (Object.prototype.hasOwnProperty.call(preparedTrieNode, k)) {
+        const actualVal = preparedTrieNode[k as keyof TrieBranchNode]
+        if (Array.isArray(v)) {
+          if (Array.isArray(actualVal)) {
+            assert.equal(v.length, actualVal.length, `actual ${k} length: ${actualVal.length} does not equal expected: ${v.length}`)
+          } else {
+            throw new TypeError(`key ${k} expected to be of type Buffer[]`)
+          }
+        } else if (v instanceof CID) {
+          if (actualVal instanceof CID) {
+            assert.equal(actualVal.toString(), v.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
+          } else {
+            throw new TypeError(`key ${k} expected to be of type CID`)
+          }
+        } else if (v instanceof Buffer) {
+          if (actualVal instanceof Buffer) {
+            assert(v.equals(actualVal), `actual ${k}: ${actualVal} does not equal expected: ${v}`)
+          } else {
+            throw new TypeError(`key ${k} expected to be of type Buffer`)
+          }
         } else {
-          throw new TypeError(`key ${k} expected to be of type Buffer[]`)
-        }
-      } else if (v instanceof Buffer) {
-        if (actualVal instanceof Buffer) {
-          assert(v.equals(actualVal), `actual ${k}: ${actualVal} does not equal expected: ${v}`)
-        } else {
-          throw new TypeError(`key ${k} expected to be of type Buffer`)
+          assert.equal(preparedTrieNode[k as keyof TrieBranchNode], v, `actual ${k}: ${preparedTrieNode[k as keyof TrieBranchNode]} does not equal expected: ${v}`)
         }
       } else {
-        assert.equal(preparedTrieNode[k as keyof TrieNode], v, `actual ${k}: ${preparedTrieNode[k as keyof TrieNode]} does not equal expected: ${v}`)
+        throw new Error(`key ${k} found in expectedTx is not found in the preparedTx`)
       }
-    } else {
-      throw new Error(`key ${k} found in expectedTx is not found in the preparedTx`)
+    }
+  } else if (isTrieLeafNode(preparedTrieNode)) {
+    for (const [k, v] of Object.entries(expectedTrieNode)) {
+      if (Object.prototype.hasOwnProperty.call(preparedTrieNode, k)) {
+        const actualVal = preparedTrieNode[k as keyof TrieLeafNode]
+        if (Array.isArray(v)) {
+          if (Array.isArray(actualVal)) {
+            assert.equal(v.length, actualVal.length, `actual ${k} length: ${actualVal.length} does not equal expected: ${v.length}
+            actual value: ${actualVal}, expected value: ${v}`)
+          } else {
+            throw new TypeError(`key ${k} expected to be of type Buffer[]`)
+          }
+        } else if (v instanceof CID) {
+          if (actualVal instanceof CID) {
+            assert.equal(actualVal.toString(), v.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
+          } else {
+            throw new TypeError(`key ${k} expected to be of type CID`)
+          }
+        } else if (v instanceof Buffer) {
+          if (actualVal instanceof Buffer) {
+            assert(v.equals(actualVal), `actual ${k}: ${actualVal} does not equal expected: ${v}`)
+          } else {
+            throw new TypeError(`key ${k} expected to be of type Buffer`)
+          }
+        } else {
+          assert.equal(preparedTrieNode[k as keyof TrieLeafNode], v, `actual ${k}: ${preparedTrieNode[k as keyof TrieLeafNode]} does not equal expected: ${v}`)
+        }
+      } else {
+        throw new Error(`key ${k} found in expectedTx is not found in the preparedTx`)
+      }
+    }
+  } else if (isTrieExtensionNode(preparedTrieNode)) {
+    for (const [k, v] of Object.entries(expectedTrieNode)) {
+      if (Object.prototype.hasOwnProperty.call(preparedTrieNode, k)) {
+        const actualVal = preparedTrieNode[k as keyof TrieExtensionNode]
+        if (Array.isArray(v)) {
+          if (Array.isArray(actualVal)) {
+            assert.equal(v.length, actualVal.length, `actual ${k} length: ${actualVal.length} does not equal expected: ${v.length}`)
+          } else {
+            throw new TypeError(`key ${k} expected to be of type Buffer[]`)
+          }
+        } else if (v instanceof CID) {
+          if (actualVal instanceof CID) {
+            assert.equal(actualVal.toString(), v.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
+          } else {
+            throw new TypeError(`key ${k} expected to be of type CID`)
+          }
+        } else if (v instanceof Buffer) {
+          if (actualVal instanceof Buffer) {
+            assert(v.equals(actualVal), `actual ${k}: ${actualVal} does not equal expected: ${v}`)
+          } else {
+            throw new TypeError(`key ${k} expected to be of type Buffer`)
+          }
+        } else {
+          assert.equal(preparedTrieNode[k as keyof TrieExtensionNode], v, `actual ${k}: ${preparedTrieNode[k as keyof TrieExtensionNode]} does not equal expected: ${v}`)
+        }
+      } else {
+        throw new Error(`key ${k} found in expectedTx is not found in the preparedTx`)
+      }
     }
   }
   expect(() => validate(code, preparedTrieNode)).to.not.throw()

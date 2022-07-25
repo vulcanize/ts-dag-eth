@@ -3,11 +3,12 @@ import { ByteView } from 'multiformats/codecs/interface'
 import { Account as DAGAccount } from './interface'
 import { cidFromHash, hashFromCID } from '../../util/src/util'
 import { code as storageTrieCode } from '../../storage_trie/src/index'
+import { CodecCode } from 'multicodec'
 const toBuffer = require('typedarray-to-buffer')
 
 export const name = 'eth-account-snapshot'
-export const code = 0x97
-export const rawCode = 0x55
+export const code: CodecCode = 0x97
+export const rawCode: CodecCode = 0x55
 
 export function encode (node: DAGAccount): ByteView<DAGAccount> {
   const account = EthAccount.fromAccountData({
