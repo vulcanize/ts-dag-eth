@@ -4,9 +4,10 @@ import { Uncles } from './interface'
 import { Header } from '../../header/src/interface'
 import { pack as headerPack, unpack as headerUnpack } from '../../header/src/helpers'
 import { rlp } from 'ethereumjs-util'
+import { CodecCode } from 'multicodec'
 
 export const name = 'eth-block-list'
-export const code = 0x91
+export const code: CodecCode = 0x91
 
 export function encode (node: Uncles): ByteView<Uncles> {
   const uncles = new Array<BlockHeaderBuffer>(node.length)

@@ -2,9 +2,10 @@ import { Log, LogBuffer } from './interface'
 import { ByteView } from 'multiformats/codecs/interface'
 import { rlp } from 'ethereumjs-util'
 import { convertLogBufferToLog, convertLogToLogBuffer } from './helpers'
+import { CodecCode } from 'multicodec'
 
 export const name = 'eth-receipt-log'
-export const code = 0x9a
+export const code: CodecCode = 0x9a
 
 export function encode (node: Log): ByteView<Log> {
   return rlp.encode(convertLogToLogBuffer(node))
