@@ -17,6 +17,10 @@ import { code as accountCode } from '../../state_trie/src/index'
 import { isLog } from '../../log/src/interface'
 import { code as logCode } from '../../log_trie/src/index'
 import { code as storageCode } from '../../storage_trie/src/index'
+import { decode as decodeLog } from '../../log/src/index'
+import { decode as decodeRct } from '../../rct/src/index'
+import { decode as decodeTx } from '../../tx/src/index'
+import { decode as decodeAccount } from '../../state_account/src/index'
 import { Nibbles } from 'merkle-patricia-tree/dist/trieNode'
 import { CodecCode } from 'multicodec'
 import {
@@ -70,26 +74,11 @@ function preparePartialPath (node: any): Nibbles {
 }
 
 export function prepareLeafNode (code: CodecCode, node: any): TrieLeafNode {
-  let value: Value
   const partialPath = preparePartialPath(node)
-
-  if (node.Value == null) {
-    throw new TypeError('Invalid eth-trie-node leaf form; node.Value is null/undefined')
-  } else if ((isLog(node.Value) && code === logCode) ||
-    (isReceipt(node.Value) && code === rctCode) ||
-    (isTransaction(node.Value) && code === txCode) ||
-    (isAccount(node.Value) && code === accountCode) ||
-    (Buffer.isBuffer(node.Value) && code === storageCode)) {
-    value = node.Value
-  } else if (typeof node.Value === 'string' && code === storageCode) {
-    value = Buffer.from(node.Value, 'hex')
-  } else if ((node.Value instanceof Uint8Array ||
-    (Array.isArray(node.Value) && node.Value.every((item: any) => typeof item === 'number'))) && code === storageCode) {
-    value = toBuffer(node.Value)
-  } else {
-    throw new TypeError('Invalid eth-trie-node leaf form; node.Value needs to the correct Value type for the given trie')
+  const value = prepareValue(code, node)
+  if (value == null) {
+    throw Error('TrieLeafNode cannot have null value')
   }
-
   return {
     PartialPath: partialPath,
     Value: value
@@ -119,7 +108,7 @@ export function prepareExtensionNode (node: any): TrieExtensionNode {
 }
 
 function prepareBranchChild (code: CodecCode, childNode: any): Child | null {
-  if (childNode == null) {
+  if (childNode == null) { // should we attempt to prepare embedded children that are still encoded as raw Buffer or []Buffer
     return null
   } else if (isTrieLeafNode(childNode)) {
     return prepareLeafNode(code, childNode)
@@ -158,23 +147,7 @@ export function prepareBranchNode (code: CodecCode, node: any): TrieBranchNode {
   const childE: Child | null = prepareBranchChild(code, node.ChildE)
   const childF: Child | null = prepareBranchChild(code, node.ChildF)
 
-  let value: Value | null
-
-  if (node.Value == null) {
-    value = null
-  } else if ((isLog(node.Value) && code === logCode) ||
-    (isReceipt(node.Value) && code === rctCode) ||
-    (isTransaction(node.Value) && code === txCode) ||
-    (isAccount(node.Value) && code === accountCode) ||
-    (Buffer.isBuffer(node.Value) && code === storageCode)) {
-    value = node.Value
-  } else if (typeof node.Value === 'string' && code === storageCode) {
-    value = Buffer.from(node.Value, 'hex')
-  } else if (node.Value instanceof Uint8Array && code === storageCode) {
-    value = toBuffer(node.Value)
-  } else {
-    throw new TypeError('Invalid eth-trie-node branch form; node.Value needs to the correct Value type for the given trie')
-  }
+  const value = prepareValue(code, node)
 
   return {
     Child0: child0,
@@ -195,6 +168,75 @@ export function prepareBranchNode (code: CodecCode, node: any): TrieBranchNode {
     ChildF: childF,
     Value: value
   }
+}
+
+export function prepareValue (code: CodecCode, node: any): Value | null {
+  let value: Value | null
+
+  if (node.Value == null) {
+    throw new TypeError('Invalid eth-trie-node leaf form; node.Value is null/undefined')
+  }
+
+  switch (code) {
+    case logCode: {
+      if (isLog(node.Value)) {
+        value = node.Value
+        break
+      } else if (node.Value instanceof Uint8Array || node.Value instanceof Buffer) {
+        value = decodeLog(node.Value)
+        break
+      } else {
+        throw Error('log codec code provided but value is not a Log')
+      }
+    }
+    case rctCode:
+      if (isReceipt(node.Value)) {
+        value = node.Value
+        break
+      } else if (node.Value instanceof Uint8Array || node.Value instanceof Buffer) {
+        value = decodeRct(node.Value)
+        break
+      } else {
+        throw Error('rct codec code provided but value is not a Receipt')
+      }
+    case txCode:
+      if (isTransaction(node.Value)) {
+        value = node.Value
+        break
+      } else if (node.Value instanceof Uint8Array || node.Value instanceof Buffer) {
+        value = decodeTx(node.Value)
+        break
+      } else {
+        throw Error('tx codec code provided but value is not a Transaction')
+      }
+    case accountCode:
+      if (isAccount(node.Value)) {
+        value = node.Value
+        break
+      } else if (node.Value instanceof Uint8Array || node.Value instanceof Buffer) {
+        value = decodeAccount(node.Value)
+        break
+      } else {
+        throw Error('account codec code provided but value is not a Account')
+      }
+    case storageCode:
+      if (Buffer.isBuffer(node.Value)) {
+        value = node.Value
+        break
+      } else if (node.Value instanceof Uint8Array ||
+        (Array.isArray(node.Value) && node.Value.every((item: any) => typeof item === 'number'))) {
+        value = toBuffer(node.Value)
+        break
+      } else if (typeof node.Value === 'string') {
+        value = Buffer.from(node.Value, 'hex')
+        break
+      } else {
+        throw Error('storage codec code provided but value is not a raw storage value')
+      }
+    default:
+      throw new TypeError(`Unrecognized codec code ${code}`)
+  }
+  return value
 }
 
 export function prepare (code: CodecCode, node: any): TrieNode {

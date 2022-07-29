@@ -136,7 +136,7 @@ function testValidate (anyTrieNode: any, expectedTrieNode: TrieNode) {
           assert.equal(preparedTrieNode[k as keyof TrieBranchNode], v, `actual ${k}: ${preparedTrieNode[k as keyof TrieBranchNode]} does not equal expected: ${v}`)
         }
       } else {
-        throw new Error(`key ${k} found in expectedTx is not found in the preparedTx`)
+        throw new Error(`key ${k} found in expected TrieBranchNode is not found in the prepared TrieBranchNode`)
       }
     }
   } else if (isTrieLeafNode(preparedTrieNode)) {
@@ -166,7 +166,7 @@ function testValidate (anyTrieNode: any, expectedTrieNode: TrieNode) {
           assert.equal(preparedTrieNode[k as keyof TrieLeafNode], v, `actual ${k}: ${preparedTrieNode[k as keyof TrieLeafNode]} does not equal expected: ${v}`)
         }
       } else {
-        throw new Error(`key ${k} found in expectedTx is not found in the preparedTx`)
+        throw new Error(`key ${k} found in expected TrieLeafNode is not found in the prepared TrieLeafNode`)
       }
     }
   } else if (isTrieExtensionNode(preparedTrieNode)) {
@@ -195,7 +195,7 @@ function testValidate (anyTrieNode: any, expectedTrieNode: TrieNode) {
           assert.equal(preparedTrieNode[k as keyof TrieExtensionNode], v, `actual ${k}: ${preparedTrieNode[k as keyof TrieExtensionNode]} does not equal expected: ${v}`)
         }
       } else {
-        throw new Error(`key ${k} found in expectedTx is not found in the preparedTx`)
+        throw new Error(`key ${k} found in expected TrieExtensionNode is not found in the prepared TrieExtensionNode`)
       }
     }
   }

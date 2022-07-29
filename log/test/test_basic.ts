@@ -4,7 +4,8 @@ import { LogBuffer, Log } from '../src/interface'
 import { convertLogBufferToLog } from '../src/helpers'
 import { prepare, validate } from '../src/util'
 import * as fs from 'fs'
-import { Address, rlp } from 'ethereumjs-util'
+import { rlp } from 'ethereumjs-util'
+import { checkEquality } from './util'
 
 const { assert } = chai
 const test = it
@@ -43,37 +44,7 @@ describe('eth-log', function () {
   test('prepare and validate', () => {
     expect(() => validate(anyLog as any)).to.throw()
     const preparedLog = prepare(anyLog)
-    for (const [k, v] of Object.entries(expectedLogNode)) {
-      if (Object.prototype.hasOwnProperty.call(preparedLog, k)) {
-        const actualVal = preparedLog[k as keyof Log]
-        if (Array.isArray(v)) {
-          if (Array.isArray(actualVal)) {
-            assert.equal(v.length, actualVal.length, `actual ${k} length: ${actualVal.length} does not equal expected: ${v.length}`)
-            for (const [i, topic] of v.entries()) {
-              assert(topic.equals(actualVal[i]), `actual Topic: ${actualVal[i]} does not equal expected: ${topic}`)
-            }
-          } else {
-            throw new TypeError(`key ${k} expected to be of type Buffer[]`)
-          }
-        } else if (v instanceof Address) {
-          if (actualVal instanceof Address) {
-            assert.equal(actualVal.toString(), v.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
-          } else {
-            throw new TypeError(`key ${k} expected to be of type Address`)
-          }
-        } else if (v instanceof Buffer) {
-          if (actualVal instanceof Buffer) {
-            assert(v.equals(actualVal), `actual ${k}: ${actualVal} does not equal expected: ${v}`)
-          } else {
-            throw new TypeError(`key ${k} expected to be of type Buffer`)
-          }
-        } else {
-          assert.equal(preparedLog[k as keyof Log], v, `actual ${k}: ${preparedLog[k as keyof Log]} does not equal expected: ${v}`)
-        }
-      } else {
-        throw new Error(`key ${k} found in expectedLogNode is not found in the preparedLog`)
-      }
-    }
+    checkEquality(expectedLogNode, preparedLog)
     expect(() => validate(preparedLog)).to.not.throw()
   })
 })

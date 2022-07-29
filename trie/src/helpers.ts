@@ -111,9 +111,13 @@ export function packTwoMemberNode (code: CodecCode, raw: Buffer[]): TrieLeafNode
   const nibbles = bufferToNibbles(raw[0]) // convert the bytes to nibbles
   if (isTerminator(nibbles)) {
     nibbles.push(16) // add the terminator flag
+    const val = packValue(code, raw[1])
+    if (val == null) {
+      throw Error('TrieLeafNode.Value cannot be null')
+    }
     return {
       PartialPath: removeHexPrefix(nibbles), // remove the prefix
-      Value: raw[1]
+      Value: val
     }
   }
   return {
@@ -122,13 +126,17 @@ export function packTwoMemberNode (code: CodecCode, raw: Buffer[]): TrieLeafNode
   }
 }
 
-export function packLeafNode (raw: Buffer[]): TrieLeafNode {
+export function packLeafNode (code: CodecCode, raw: Buffer[]): TrieLeafNode {
   const nibbles = bufferToNibbles(raw[0]) // convert the bytes to nibbles
   if (isTerminator(nibbles)) {
     nibbles.push(16) // add the terminator flag to the end
+    const val = packValue(code, raw[1])
+    if (val == null) {
+      throw Error('TrieLeafNode.Value cannot be null')
+    }
     return {
       PartialPath: removeHexPrefix(nibbles), // remove the prefix
-      Value: raw[1]
+      Value: val
     }
   } else {
     throw new Error('node is expected to be a leaf node but partial path does not have a terminator')
@@ -164,7 +172,7 @@ export function packValue (code: CodecCode, value: Buffer | null): Value | null 
 export function packChild (code: CodecCode, raw: Buffer): Child | null {
   if (Array.isArray(raw)) {
     if (raw.length === 2) {
-      return packLeafNode(raw)
+      return packLeafNode(code, raw)
     } else {
       throw new Error('leaf node child should either be a two member byte array (embedded leaf node) or raw bytes (hash of child leaf node)')
     }

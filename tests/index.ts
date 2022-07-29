@@ -24,10 +24,10 @@ describe('eth-uncles', () => {
 describe('eth-trie', () => {
   require('../trie/test/test_basic')
 })
-/*
 describe('eth-log-trie', () => {
   require('../log_trie/test/test_basic')
 })
+/*
 describe('eth-rct-trie', () => {
   require('../rct_trie/test/test_basic')
 })
