@@ -27,10 +27,10 @@ describe('eth-trie', () => {
 describe('eth-log-trie', () => {
   require('../log_trie/test/test_basic')
 })
-/*
 describe('eth-rct-trie', () => {
   require('../rct_trie/test/test_basic')
 })
+/*
 describe('eth-tx-trie', () => {
   require('../tx_trie/test/test_basic')
 })

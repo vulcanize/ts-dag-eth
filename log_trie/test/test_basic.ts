@@ -4,19 +4,16 @@ import {
   isTrieExtensionNode,
   isTrieBranchNode,
   isTrieLeafNode,
-  TrieBranchNode,
   TrieExtensionNode,
   TrieLeafNode,
   TrieNode
 } from '../src/interface'
-import { isLog } from '../../log/src/interface'
-import { checkEquality } from '../../log/test/util'
+import { checkEquality } from '../test/util'
 import { prepare, validate } from '../src/util'
 import * as fs from 'fs'
 import { packBranchNode, packTwoMemberNode } from '../../trie/src/helpers'
 import { addHexPrefix } from 'merkle-patricia-tree/dist/util/hex'
 import { rlp } from 'ethereumjs-util'
-import { CID } from 'multiformats/cid'
 import { nibblesToBuffer } from '../../util/src/util'
 
 const { assert } = chai
@@ -102,117 +99,19 @@ describe('eth-trie', function () {
   })
 
   test('prepare and validate', () => {
-    testValidate(anyBranchNode, expectedBranchNode)
-    testValidate(anyLeafNode, expectedLeafNode)
-    testValidate(anyExtensionNode, expectedExtensionNode)
+    expect(() => validate(anyBranchNode as any)).to.throw()
+    const preparedBranchNode = prepare(anyBranchNode)
+    checkEquality(expectedBranchNode, preparedBranchNode)
+    expect(() => validate(preparedBranchNode)).to.not.throw()
+
+    expect(() => validate(anyLeafNode as any)).to.throw()
+    const preparedLeafNode = prepare(anyLeafNode)
+    checkEquality(expectedLeafNode, preparedLeafNode)
+    expect(() => validate(preparedLeafNode)).to.not.throw()
+
+    expect(() => validate(anyExtensionNode as any)).to.throw()
+    const preparedExtensionNode = prepare(anyExtensionNode)
+    checkEquality(expectedExtensionNode, preparedExtensionNode)
+    expect(() => validate(preparedExtensionNode)).to.not.throw()
   })
 })
-
-function testValidate (anyTrieNode: any, expectedTrieNode: TrieNode) {
-  expect(() => validate(anyTrieNode as any)).to.throw()
-  const preparedTrieNode = prepare(anyTrieNode)
-  if (isTrieBranchNode(preparedTrieNode)) {
-    for (const [k, v] of Object.entries(expectedTrieNode)) {
-      if (Object.prototype.hasOwnProperty.call(preparedTrieNode, k)) {
-        const actualVal = preparedTrieNode[k as keyof TrieBranchNode]
-        if (Array.isArray(v)) {
-          if (Array.isArray(actualVal)) {
-            assert.equal(v.length, actualVal.length, `actual ${k} length: ${actualVal.length} does not equal expected: ${v.length}`)
-          } else {
-            throw new TypeError(`key ${k} expected to be of type Buffer[]`)
-          }
-        } else if (v instanceof CID) {
-          if (actualVal instanceof CID) {
-            assert.equal(actualVal.toString(), v.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
-          } else {
-            throw new TypeError(`key ${k} expected to be of type CID`)
-          }
-        } else if (v instanceof Buffer) {
-          if (actualVal instanceof Buffer) {
-            assert(v.equals(actualVal), `actual ${k}: ${actualVal} does not equal expected: ${v}`)
-          } else {
-            throw new TypeError(`key ${k} expected to be of type Buffer`)
-          }
-        } else if (v == null) {
-          assert(actualVal == null, `actual ${k}: ${actualVal} does not equal expected: ${v}`)
-        } else if (isLog(v)) {
-          if (isLog(actualVal)) {
-            checkEquality(v, actualVal)
-          } else {
-            throw new TypeError(`ley ${k} expected to be of type Log`)
-          }
-        } else {
-          assert.equal(preparedTrieNode[k as keyof TrieBranchNode], v, `actual ${k}: ${preparedTrieNode[k as keyof TrieBranchNode]} does not equal expected: ${v}`)
-        }
-      } else {
-        throw new Error(`key ${k} found in expected TrieBranchNode is not found in the prepared TrieBranchNode`)
-      }
-    }
-  } else if (isTrieLeafNode(preparedTrieNode)) {
-    for (const [k, v] of Object.entries(expectedTrieNode)) {
-      if (Object.prototype.hasOwnProperty.call(preparedTrieNode, k)) {
-        const actualVal = preparedTrieNode[k as keyof TrieLeafNode]
-        if (Array.isArray(v)) {
-          if (Array.isArray(actualVal)) {
-            assert.equal(v.length, actualVal.length, `actual ${k} length: ${actualVal.length} does not equal expected: ${v.length}`)
-          } else {
-            throw new TypeError(`key ${k} expected to be of type Buffer[]`)
-          }
-        } else if (v instanceof CID) {
-          if (actualVal instanceof CID) {
-            assert.equal(actualVal.toString(), v.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
-          } else {
-            throw new TypeError(`key ${k} expected to be of type CID`)
-          }
-        } else if (v instanceof Buffer) {
-          if (actualVal instanceof Buffer) {
-            assert(v.equals(actualVal), `actual ${k}: ${actualVal} does not equal expected: ${v}`)
-          } else {
-            throw new TypeError(`key ${k} expected to be of type Buffer`)
-          }
-        } else if (isLog(v)) {
-          if (isLog(actualVal)) {
-            checkEquality(v, actualVal)
-          } else {
-            throw new TypeError(`ley ${k} expected to be of type Log
-            expected value: ${v}, actual value: ${actualVal}`)
-          }
-        } else {
-          assert.equal(preparedTrieNode[k as keyof TrieLeafNode], v, `actual ${k}: ${preparedTrieNode[k as keyof TrieLeafNode]} does not equal expected: ${v}`)
-        }
-      } else {
-        throw new Error(`key ${k} found in expected TrieLeafNode is not found in the prepared TrieLeafNode`)
-      }
-    }
-  } else if (isTrieExtensionNode(preparedTrieNode)) {
-    for (const [k, v] of Object.entries(expectedTrieNode)) {
-      if (Object.prototype.hasOwnProperty.call(preparedTrieNode, k)) {
-        const actualVal = preparedTrieNode[k as keyof TrieExtensionNode]
-        if (Array.isArray(v)) {
-          if (Array.isArray(actualVal)) {
-            assert.equal(v.length, actualVal.length, `actual ${k} length: ${actualVal.length} does not equal expected: ${v.length}`)
-          } else {
-            throw new TypeError(`key ${k} expected to be of type Buffer[]`)
-          }
-        } else if (v instanceof CID) {
-          if (actualVal instanceof CID) {
-            assert.equal(actualVal.toString(), v.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
-          } else {
-            throw new TypeError(`key ${k} expected to be of type CID`)
-          }
-        } else if (v instanceof Buffer) {
-          if (actualVal instanceof Buffer) {
-            assert(v.equals(actualVal), `actual ${k}: ${actualVal} does not equal expected: ${v}`)
-          } else {
-            throw new TypeError(`key ${k} expected to be of type Buffer`)
-          }
-        } else {
-          assert.equal(preparedTrieNode[k as keyof TrieExtensionNode], v, `actual ${k}: ${preparedTrieNode[k as keyof TrieExtensionNode]} does not equal expected: ${v}`)
-        }
-      } else {
-        throw new Error(`key ${k} found in expected TrieExtensionNode is not found in the prepared TrieExtensionNode`)
-      }
-    }
-  }
-  expect(() => validate(preparedTrieNode)).to.not.throw()
-}

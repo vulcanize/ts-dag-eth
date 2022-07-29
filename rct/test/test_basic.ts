@@ -1,14 +1,11 @@
 import chai, { expect } from 'chai'
 import { encode, decode } from '../src/index'
 import { Receipt } from '../src/interface'
-import { Log } from '../../log/src/interface'
-import { prepare, validate } from '../src/util'
 import * as fs from 'fs'
-import { Address } from 'ethereumjs-util'
 import { AccessListReceipt, FeeMarketReceipt, LegacyReceipt, ReceiptFactory } from '../src/types'
 import { pack } from '../../rct/src/helpers'
-import { CID } from 'multiformats/cid'
-import BN from 'bn.js'
+import { checkEquality } from '../test/util'
+import { prepare, validate } from '../src/util'
 
 const { assert } = chai
 const test = it
@@ -78,91 +75,19 @@ describe('eth-tx-receipt', function () {
   })
 
   test('prepare and validate', () => {
-    testValidate(anyAccessListRct, expectedAccessListRct)
-    testValidate(anyDynamicFeeRct, expectedDynamicFeeRct)
-    testValidate(anyLegacyRct, expectedLegacyRct)
+    expect(() => validate(anyAccessListRct as any)).to.throw()
+    const preparedAccessListRct = prepare(anyAccessListRct)
+    checkEquality(expectedAccessListRct, preparedAccessListRct)
+    expect(() => validate(preparedAccessListRct)).to.not.throw()
+
+    expect(() => validate(anyDynamicFeeRct as any)).to.throw()
+    const preparedDynamicFeeRct = prepare(anyDynamicFeeRct)
+    checkEquality(expectedDynamicFeeRct, preparedDynamicFeeRct)
+    expect(() => validate(preparedDynamicFeeRct)).to.not.throw()
+
+    expect(() => validate(anyLegacyRct as any)).to.throw()
+    const preparedLegacyRct = prepare(anyLegacyRct)
+    checkEquality(expectedLegacyRct, preparedLegacyRct)
+    expect(() => validate(preparedLegacyRct)).to.not.throw()
   })
 })
-
-function testValidate (anyRct: any, expectedRct: Receipt) {
-  expect(() => validate(anyRct as any)).to.throw()
-  const preparedAccessListRct = prepare(anyRct)
-  for (const [k, v] of Object.entries(expectedRct)) {
-    if (Object.prototype.hasOwnProperty.call(preparedAccessListRct, k)) {
-      const actualVal = preparedAccessListRct[k as keyof Receipt]
-      if (v instanceof CID) {
-        if (actualVal instanceof CID) {
-          assert.equal(actualVal.toString(), v.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
-        } else {
-          throw new TypeError(`key ${k} expected to be of type CID`)
-        }
-      } else if (Array.isArray(v)) {
-        if (Array.isArray(actualVal)) {
-          assert.equal(v.length, actualVal.length, `actual ${k} length: ${actualVal.length} does not equal expected: ${v.length}`)
-          for (const [i, log] of v.entries()) {
-            validateLog(actualVal[i], log)
-          }
-        } else {
-          throw new TypeError(`key ${k} expected to be of type Buffer[]`)
-        }
-      } else if (v instanceof Address) {
-        if (actualVal instanceof Address) {
-          assert.equal(actualVal.toString(), v.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
-        } else {
-          throw new TypeError(`key ${k} expected to be of type Address`)
-        }
-      } else if (v instanceof Buffer) {
-        if (actualVal instanceof Buffer) {
-          assert(v.equals(actualVal), `actual ${k}: ${actualVal} does not equal expected: ${v}`)
-        } else {
-          throw new TypeError(`key ${k} expected to be of type Buffer`)
-        }
-      } else if (v instanceof BN) {
-        if (actualVal instanceof BN) {
-          assert.equal(v.toNumber(), actualVal.toNumber(), `actual ${k}: ${actualVal.toNumber()} does not equal expected: ${v.toNumber()}`)
-        } else {
-          throw new TypeError(`key ${k} expected to be of type BN`)
-        }
-      } else {
-        assert.equal(preparedAccessListRct[k as keyof Receipt], v, `actual ${k}: ${preparedAccessListRct[k as keyof Receipt]} does not equal expected: ${v}`)
-      }
-    } else {
-      throw new Error(`key ${k} found in expectedRct is not found in the preparedRct`)
-    }
-  }
-  expect(() => validate(preparedAccessListRct)).to.not.throw()
-}
-
-function validateLog (log: Log, expectedLog: Log) {
-  for (const [k, v] of Object.entries(expectedLog)) {
-    if (Object.prototype.hasOwnProperty.call(log, k)) {
-      const actualVal = log[k as keyof Log]
-      if (Array.isArray(v)) {
-        if (Array.isArray(actualVal)) {
-          assert.equal(v.length, actualVal.length, `actual ${k} length: ${actualVal.length} does not equal expected: ${v.length}`)
-          for (const [i, topic] of v.entries()) {
-            assert(topic.equals(actualVal[i]), `actual Topic: ${actualVal[i]} does not equal expected: ${topic}`)
-          }
-        } else {
-          throw new TypeError(`key ${k} expected to be of type Buffer[]`)
-        }
-      } else if (v instanceof Address) {
-        if (actualVal instanceof Address) {
-          assert.equal(actualVal.toString(), v.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
-        } else {
-          throw new TypeError(`key ${k} expected to be of type Address`)
-        }
-      } else if (v instanceof Buffer) {
-        if (actualVal instanceof Buffer) {
-          assert(v.equals(actualVal), `actual ${k}: ${actualVal} does not equal expected: ${v}`)
-        } else {
-          throw new TypeError(`key ${k} expected to be of type Buffer`)
-        }
-      } else {
-        assert.equal(log[k as keyof Log], v, `actual ${k}: ${log[k as keyof Log]} does not equal expected: ${v}`)
-      }
-    } else {
-      throw new Error(`key ${k} found in expectedLogNode is not found in the preparedLog`)
-    }
-  }
-}
