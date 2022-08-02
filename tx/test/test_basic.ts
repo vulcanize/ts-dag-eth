@@ -3,15 +3,14 @@ import { encode, decode } from '../src/index'
 import { Transaction } from '../src/interface'
 import { prepare, validate } from '../src/util'
 import * as fs from 'fs'
-import { Address } from 'ethereumjs-util'
 import { pack } from '../src/helpers'
-import BN from 'bn.js'
 import {
   AccessListEIP2930Transaction,
   FeeMarketEIP1559Transaction,
   Transaction as LegacyTransaction,
   TransactionFactory
 } from '@ethereumjs/tx'
+import { checkEquality } from './util'
 
 const { assert } = chai
 const test = it
@@ -102,48 +101,19 @@ describe('eth-tx', function () {
   })
 
   test('prepare and validate', () => {
-    testValidate(anyAccessListTx, expectedAccessListTx)
-    testValidate(anyDynamicFeeTx, expectedDynamicFeeTx)
-    testValidate(anyLegacyTx, expectedLegacyTx)
+    expect(() => validate(anyAccessListTx as any)).to.throw()
+    const preparedAccessListTx = prepare(anyAccessListTx)
+    checkEquality(expectedAccessListTx, preparedAccessListTx)
+    expect(() => validate(preparedAccessListTx)).to.not.throw()
+
+    expect(() => validate(anyDynamicFeeTx as any)).to.throw()
+    const preparedDynamicFeeTx = prepare(anyDynamicFeeTx)
+    checkEquality(expectedDynamicFeeTx, preparedDynamicFeeTx)
+    expect(() => validate(preparedDynamicFeeTx)).to.not.throw()
+
+    expect(() => validate(anyLegacyTx as any)).to.throw()
+    const preparedLegacyTx = prepare(anyLegacyTx)
+    checkEquality(expectedLegacyTx, preparedLegacyTx)
+    expect(() => validate(preparedLegacyTx)).to.not.throw()
   })
 })
-
-function testValidate (anyTx: any, expectedTx: Transaction) {
-  expect(() => validate(anyTx as any)).to.throw()
-  const preparedAccessListTx = prepare(anyTx)
-  for (const [k, v] of Object.entries(expectedTx)) {
-    if (Object.prototype.hasOwnProperty.call(preparedAccessListTx, k)) {
-      const actualVal = preparedAccessListTx[k as keyof Transaction]
-      if (Array.isArray(v)) {
-        if (Array.isArray(actualVal)) {
-          assert.equal(v.length, actualVal.length, `actual ${k} length: ${actualVal.length} does not equal expected: ${v.length}`)
-        } else {
-          throw new TypeError(`key ${k} expected to be of type Buffer[]`)
-        }
-      } else if (v instanceof Address) {
-        if (actualVal instanceof Address) {
-          assert.equal(actualVal.toString(), v.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
-        } else {
-          throw new TypeError(`key ${k} expected to be of type Address`)
-        }
-      } else if (v instanceof Buffer) {
-        if (actualVal instanceof Buffer) {
-          assert(v.equals(actualVal), `actual ${k}: ${actualVal} does not equal expected: ${v}`)
-        } else {
-          throw new TypeError(`key ${k} expected to be of type Buffer`)
-        }
-      } else if (v instanceof BN) {
-        if (actualVal instanceof BN) {
-          assert.equal(v.toString(), actualVal.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
-        } else {
-          throw new TypeError(`key ${k} expected to be of type BN`)
-        }
-      } else {
-        assert.equal(preparedAccessListTx[k as keyof Transaction], v, `actual ${k}: ${preparedAccessListTx[k as keyof Transaction]} does not equal expected: ${v}`)
-      }
-    } else {
-      throw new Error(`key ${k} found in expectedTx is not found in the preparedTx`)
-    }
-  }
-  expect(() => validate(preparedAccessListTx)).to.not.throw()
-}
