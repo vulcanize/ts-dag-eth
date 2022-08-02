@@ -2,6 +2,7 @@ import { CID } from 'multiformats/cid'
 import { create } from 'multiformats/hashes/digest'
 import { CodecCode } from 'multicodec'
 import { keccak256, randomHex } from 'web3-utils'
+import { Nibbles } from 'merkle-patricia-tree/dist/trieNode'
 const toBuffer = require('typedarray-to-buffer')
 
 const version = 1
@@ -74,4 +75,46 @@ export function arrayToNumber (u8: Uint8Array): number {
 
 export function hasOnlyProperties (node: any, properties: string[]): boolean {
   return !Object.keys(node).some((p) => !properties.includes(p))
+}
+
+export function compactStrToNibbles (key: string): Nibbles {
+  return bufferToNibbles(Buffer.from(key))
+}
+
+export function nibblesStrToNibbles (str: string): Nibbles {
+  const bkey = Buffer.from(str)
+  const nibbles = [] as number[]
+
+  for (let i = 0; i < bkey.length; i++) {
+    nibbles[i] = bkey[i]
+  }
+
+  return nibbles
+}
+
+export function stringListToNibbles (str: string): Nibbles {
+  return str.split(',').map(Number)
+}
+
+export function bufferToNibbles (key: Buffer): Nibbles {
+  const bkey = Buffer.from(key)
+  const nibbles = [] as any
+
+  for (let i = 0; i < bkey.length; i++) {
+    let q = i * 2
+    nibbles[q] = bkey[i] >> 4
+    ++q
+    nibbles[q] = bkey[i] % 16
+  }
+
+  return nibbles
+}
+
+export function nibblesToBuffer (arr: Nibbles): Buffer {
+  const buf = Buffer.alloc(arr.length / 2)
+  for (let i = 0; i < buf.length; i++) {
+    let q = i * 2
+    buf[i] = (arr[q] << 4) + arr[++q]
+  }
+  return buf
 }

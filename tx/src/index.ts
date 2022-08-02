@@ -2,13 +2,15 @@ import { ByteView } from 'multiformats/codecs/interface'
 import { Transaction } from '../src/interface'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { pack, unpack } from './helpers'
+import { CodecCode } from 'multicodec'
 const toBuffer = require('typedarray-to-buffer')
 
 export const name = 'eth-tx'
-export const code = 0x93
+export const code: CodecCode = 0x93
 
 export function encode (node: Transaction): ByteView<Transaction> {
-  return unpack(node).serialize()
+  const unpackedTx = unpack(node)
+  return unpackedTx.serialize()
 }
 
 export function decode (bytes: ByteView<Transaction>): Transaction {

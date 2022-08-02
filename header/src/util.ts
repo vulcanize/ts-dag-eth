@@ -54,10 +54,12 @@ export function prepare (node: any): Header {
     throw new TypeError('Invalid eth-block form; node.Coinbase is null/undefined')
   } else if (typeof node.Coinbase === 'string') {
     coinbase = Address.fromString(node.Coinbase)
-  } else if (node.Coinbase instanceof Uint8Array) {
-    coinbase = new Address(node.Coinbase.buffer)
+  } else if (node.Coinbase instanceof Uint8Array || (Array.isArray(node.Coinbase) && node.Coinbase.every((item: any) => typeof item === 'number'))) {
+    coinbase = new Address(toBuffer(node.Coinbase))
   } else if (node.Coinbase instanceof Buffer) {
     coinbase = new Address(node.Coinbase)
+  } else if (node.Coinbase instanceof Address) {
+    coinbase = node.Coinbase
   } else {
     throw new TypeError('Invalid eth-block form; node.Coinbase needs to be of type Address')
   }
@@ -102,7 +104,7 @@ export function prepare (node: any): Header {
     throw new TypeError('Invalid eth-block form; node.Bloom is null/undefined')
   } else if (typeof node.Bloom === 'string') {
     bloom = Buffer.from(node.Bloom, 'hex')
-  } else if (node.Bloom instanceof Uint8Array) {
+  } else if (node.Bloom instanceof Uint8Array || (Array.isArray(node.Bloom) && node.Bloom.every((item: any) => typeof item === 'number'))) {
     bloom = toBuffer(node.Bloom)
   } else if (node.Bloom instanceof Buffer) {
     bloom = node.Bloom
@@ -112,6 +114,8 @@ export function prepare (node: any): Header {
 
   if (node.Difficulty == null) {
     throw new TypeError('Invalid eth-block form; node.Difficulty is null/undefined')
+  } else if (node.Difficulty instanceof BN) {
+    diff = node.Difficulty
   } else if (typeof node.Difficulty === 'string' || typeof node.Difficulty === 'number' || node.Difficulty instanceof Uint8Array ||
     node.Difficulty instanceof Buffer) {
     diff = new BN(node.Difficulty, 10)
@@ -123,6 +127,8 @@ export function prepare (node: any): Header {
 
   if (node.Number == null) {
     throw new TypeError('Invalid eth-block form; node.Number is null/undefined')
+  } else if (node.Number instanceof BN) {
+    number = node.Nonce
   } else if (typeof node.Number === 'string' || typeof node.Number === 'number' || node.Number instanceof Uint8Array ||
     node.Number instanceof Buffer) {
     number = new BN(node.Number, 10)
@@ -134,6 +140,8 @@ export function prepare (node: any): Header {
 
   if (node.GasLimit == null) {
     throw new TypeError('Invalid eth-block form; node.GasLimit is null/undefined')
+  } else if (node.GasLimit instanceof BN) {
+    gasLimit = node.GasLimit
   } else if (typeof node.GasLimit === 'string' || typeof node.GasLimit === 'number' || node.GasLimit instanceof Uint8Array ||
     node.GasLimit instanceof Buffer) {
     gasLimit = new BN(node.GasLimit, 10)
@@ -145,6 +153,8 @@ export function prepare (node: any): Header {
 
   if (node.GasUsed == null) {
     throw new TypeError('Invalid eth-block form; node.GasUsed is null/undefined')
+  } else if (node.GasUsed instanceof BN) {
+    gasUsed = node.GasUsed
   } else if (typeof node.GasUsed === 'string' || typeof node.GasUsed === 'number' || node.GasUsed instanceof Uint8Array ||
     node.GasUsed instanceof Buffer) {
     gasUsed = new BN(node.GasUsed, 10)
@@ -156,6 +166,8 @@ export function prepare (node: any): Header {
 
   if (node.Time == null) {
     throw new TypeError('Invalid eth-block form; node.Time is null/undefined')
+  } else if (node.Time instanceof BN) {
+    timestamp = node.Time
   } else if (typeof node.Time === 'string' || typeof node.Time === 'number' || node.Time instanceof Uint8Array ||
     node.Time instanceof Buffer) {
     timestamp = new BN(node.Time, 10)
@@ -169,7 +181,7 @@ export function prepare (node: any): Header {
     throw new TypeError('Invalid eth-block form; node.Extra is null/undefined')
   } else if (typeof node.Extra === 'string') {
     extraData = Buffer.from(node.Extra, 'hex')
-  } else if (node.Extra instanceof Uint8Array) {
+  } else if (node.Extra instanceof Uint8Array || (Array.isArray(node.Extra) && node.Extra.every((item: any) => typeof item === 'number'))) {
     extraData = toBuffer(node.Extra)
   } else if (node.Extra instanceof Buffer) {
     extraData = node.Extra
@@ -181,7 +193,7 @@ export function prepare (node: any): Header {
     throw new TypeError('Invalid eth-block form; node.MixDigest is null/undefined')
   } else if (typeof node.MixDigest === 'string') {
     mixHash = Buffer.from(node.MixDigest, 'hex')
-  } else if (node.MixDigest instanceof Uint8Array) {
+  } else if (node.MixDigest instanceof Uint8Array || (Array.isArray(node.MixDigest) && node.MixDigest.every((item: any) => typeof item === 'number'))) {
     mixHash = toBuffer(node.MixDigest)
   } else if (node.MixDigest instanceof Buffer) {
     mixHash = node.MixDigest
@@ -193,7 +205,7 @@ export function prepare (node: any): Header {
     throw new TypeError('Invalid eth-block form; node.Nonce is null/undefined')
   } else if (typeof node.Nonce === 'string') {
     nonce = Buffer.from(node.Nonce, 'hex')
-  } else if (node.Nonce instanceof Uint8Array) {
+  } else if (node.Nonce instanceof Uint8Array || (Array.isArray(node.Nonce) && node.Nonce.every((item: any) => typeof item === 'number'))) {
     nonce = toBuffer(node.Nonce)
   } else if (node.Nonce instanceof Buffer) {
     nonce = node.Nonce
@@ -203,6 +215,8 @@ export function prepare (node: any): Header {
 
   if (node.BaseFee == null) {
     baseFeePerGas = undefined
+  } else if (node.BaseFee instanceof BN) {
+    baseFeePerGas = node.BaseFee
   } else if (typeof node.BaseFee === 'string' || typeof node.BaseFee === 'number' || node.BaseFee instanceof Uint8Array ||
     node.BaseFee instanceof Buffer) {
     baseFeePerGas = new BN(node.BaseFee, 10)
@@ -327,8 +341,8 @@ export function validate (node: Header) {
 
   if (node.Nonce == null) {
     throw new TypeError('Invalid eth-block form; node.Nonce is null/undefined')
-  } else if (!(node.Nonce instanceof BN)) {
-    throw new TypeError('Invalid eth-block form; node.Nonce needs to be of type BN')
+  } else if (!(node.Nonce instanceof Buffer)) {
+    throw new TypeError('Invalid eth-block form; node.Nonce needs to be of type Buffer')
   }
 
   if (node.BaseFee === null) {

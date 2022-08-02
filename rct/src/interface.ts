@@ -33,5 +33,8 @@ export function isReceipt (x: any): x is Receipt {
   if ((x as Receipt).LogRootCID === undefined) {
     return false
   }
+  if ((x as Receipt).Status === undefined && (x as Receipt).PostState === undefined) {
+    return false
+  }
   return hasOnlyProperties(x, rctNodeProperties)
 }
