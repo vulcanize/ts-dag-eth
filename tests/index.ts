@@ -30,7 +30,6 @@ describe('eth-log-trie', () => {
 describe('eth-rct-trie', () => {
   require('../rct_trie/test/test_basic')
 })
-/*
 describe('eth-tx-trie', () => {
   require('../tx_trie/test/test_basic')
 })
@@ -40,4 +39,3 @@ describe('eth-state-trie', () => {
 describe('eth-storage-trie', () => {
   require('../storage_trie/test/test_basic')
 })
- */

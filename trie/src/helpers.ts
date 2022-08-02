@@ -147,6 +147,9 @@ export function packValue (code: CodecCode, value: Buffer | null): Value | null 
   if (value == null) {
     return null
   }
+  if (Buffer.from('').equals(value)) {
+    return null
+  }
   switch (code) {
     case txTrieCode: {
       return txDecode(value)
@@ -169,7 +172,10 @@ export function packValue (code: CodecCode, value: Buffer | null): Value | null 
   }
 }
 
-export function packChild (code: CodecCode, raw: Buffer): Child | null {
+export function packChild (code: CodecCode, raw: Buffer | Buffer[] | null): Child | null {
+  if (raw == null) {
+    return null
+  }
   if (Array.isArray(raw)) {
     if (raw.length === 2) {
       return packLeafNode(code, raw)
@@ -183,7 +189,7 @@ export function packChild (code: CodecCode, raw: Buffer): Child | null {
   return cidFromHash(code, raw)
 }
 
-export function packBranchNode (code: CodecCode, values: Buffer[]): TrieBranchNode {
+export function packBranchNode (code: CodecCode, values: TrieBranchNodeValuesArray): TrieBranchNode {
   return {
     Child0: packChild(code, values[0]),
     Child1: packChild(code, values[1]),

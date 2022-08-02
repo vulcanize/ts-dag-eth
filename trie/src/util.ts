@@ -20,6 +20,10 @@ import { code as storageCode } from '../../storage_trie/src/index'
 import { decode as decodeLog } from '../../log/src/index'
 import { decode as decodeRct } from '../../rct/src/index'
 import { decode as decodeTx } from '../../tx/src/index'
+import { validate as validateLog } from '../../log/src/util'
+import { validate as validateRct } from '../../rct/src/util'
+import { validate as validateTx } from '../../tx/src/util'
+import { validate as validateAccount } from '../../state_account/src/util'
 import { decode as decodeAccount } from '../../state_account/src/index'
 import { Nibbles } from 'merkle-patricia-tree/dist/trieNode'
 import { CodecCode } from 'multicodec'
@@ -176,6 +180,9 @@ export function prepareValue (code: CodecCode, node: any): Value | null {
   if (node.Value == null) {
     throw new TypeError('Invalid eth-trie-node leaf form; node.Value is null/undefined')
   }
+  if ((node.Value instanceof Uint8Array || node.Value instanceof Buffer) && (Buffer.from('').equals(node.Value))) {
+    return null
+  }
 
   switch (code) {
     case logCode: {
@@ -284,12 +291,12 @@ export function validateExtensionNode (node: TrieExtensionNode) {
   }
 }
 
-function validateBranchChild (code: CodecCode, childNode: Child | undefined | null) {
+function validateBranchChild (code: CodecCode, childNode: Child | null) {
   if (childNode != null) {
     if (isTrieLeafNode(childNode)) {
       validateLeafNode(code, childNode)
     } else if (!CID.isCID(childNode)) {
-      throw new TypeError('Invalid eth-trie-node branch form; node.Child needs to be of type Child, null, or undefined')
+      throw new TypeError('Invalid eth-trie-node branch form; node.Child needs to be of type Child or null')
     }
   }
 }
@@ -312,13 +319,20 @@ export function validateBranchNode (code: CodecCode, node: TrieBranchNode) {
   validateBranchChild(code, node.ChildE)
   validateBranchChild(code, node.ChildF)
 
-  if (!((isLog(node.Value) && code === logCode) || // TODO: switch to using validate
-    (isReceipt(node.Value) && code === rctCode) ||
-    (isTransaction(node.Value) && code === txCode) ||
-    (isAccount(node.Value) && code === accountCode) ||
-    (Buffer.isBuffer(node.Value) && code === storageCode) ||
-    node.Value != null)) {
-    throw new TypeError('Invalid eth-trie-node branch form; node.Value needs to the correct Value type for the given trie or undefined')
+  if ((node.Value == null) || ((node.Value instanceof Uint8Array || node.Value instanceof Buffer) && (Buffer.from('').equals(node.Value)))) {
+
+  } else if (isLog(node.Value) && code === logCode) {
+    validateLog(node.Value)
+  } else if (isReceipt(node.Value) && code === rctCode) {
+    validateRct(node.Value)
+  } else if (isTransaction(node.Value) && code === txCode) {
+    validateTx(node.Value)
+  } else if (isAccount(node.Value) && code === accountCode) {
+    validateAccount(node.Value)
+  } else if (Buffer.isBuffer(node.Value) && code === storageCode) {
+
+  } else {
+    throw new TypeError(`Invalid eth-trie-node branch form; node.Value needs to the correct Value type for the given trie (codec: ${code}) or null`)
   }
 }
 

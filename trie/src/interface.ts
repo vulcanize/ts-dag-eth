@@ -43,7 +43,7 @@ export type TrieBranchNodeValuesArray = [
   Buffer | Buffer[] | null,
   Buffer | Buffer[] | null,
   Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
+  Buffer | null,
 ]
 
 export const branchNodeProperties = [
