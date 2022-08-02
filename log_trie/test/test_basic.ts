@@ -27,10 +27,10 @@ const extensionNodeFileName = 'extension_node_rlp'
 describe('eth-trie', function () {
   const extensionNodeFilePath = __dirname.concat('/', extensionNodeFileName)
   const branchNodeFilePath = __dirname.concat('/', branchNodeFileName)
-  const storageLeafFilePath = __dirname.concat('/', leafNodeFileName)
+  const leafFilePath = __dirname.concat('/', leafNodeFileName)
   const extensionNodeRLP = fs.readFileSync(extensionNodeFilePath)
   const branchNodeRLP = fs.readFileSync(branchNodeFilePath)
-  const leafNodeRLP = fs.readFileSync(storageLeafFilePath)
+  const leafNodeRLP = fs.readFileSync(leafFilePath)
 
   const extensionNodeBuffer = rlp.decode(extensionNodeRLP)
   assert.isTrue(Array.isArray(extensionNodeBuffer), 'extension node buffer is not an array')
