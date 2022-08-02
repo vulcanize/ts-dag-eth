@@ -28,7 +28,7 @@ export function checkEquality (expected: Header, got: Header) {
         }
       } else if (v instanceof BN) {
         if (actualVal instanceof BN) {
-          assert.equal(v.toNumber(), actualVal.toNumber(), `actual ${k}: ${actualVal.toNumber()} does not equal expected: ${v.toNumber()}`)
+          assert.equal(v.toString(), actualVal.toString(), `actual ${k}: ${actualVal.toString()} does not equal expected: ${v.toString()}`)
         } else {
           throw new TypeError(`key ${k} expected to be of type BN`)
         }
