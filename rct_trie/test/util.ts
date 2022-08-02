@@ -43,7 +43,8 @@ export function checkEquality (expected: TrieNode, got: TrieNode) {
           if (isReceipt(actualVal)) {
             checkRctEquality(v, actualVal)
           } else {
-            throw new TypeError(`ley ${k} expected to be of type Log`)
+            throw new TypeError(`ley ${k} expected to be of type Receipt
+            expected value: ${v}, actual value: ${actualVal}`)
           }
         } else {
           assert.equal(got[k as keyof TrieBranchNode], v, `actual ${k}: ${got[k as keyof TrieBranchNode]} does not equal expected: ${v}`)
@@ -78,7 +79,7 @@ export function checkEquality (expected: TrieNode, got: TrieNode) {
           if (isReceipt(actualVal)) {
             checkRctEquality(v, actualVal)
           } else {
-            throw new TypeError(`ley ${k} expected to be of type Log
+            throw new TypeError(`ley ${k} expected to be of type Receipt
             expected value: ${v}, actual value: ${actualVal}`)
           }
         } else {
