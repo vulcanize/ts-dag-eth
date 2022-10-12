@@ -1,12 +1,14 @@
 import chai, { expect } from 'chai'
-import { encode, decode } from '../src/index'
+import { name } from '../src'
 import { LogBuffer, Log } from '../src/interface'
 import { convertLogBufferToLog } from '../src/helpers'
 import { prepare, validate } from '../src/util'
 import * as fs from 'fs'
 import { rlp } from 'ethereumjs-util'
 import { checkEquality } from './util'
+import { codecs } from '../../index'
 
+const logCodec = codecs[name]
 const { assert } = chai
 const test = it
 const same = assert.deepStrictEqual
@@ -35,9 +37,9 @@ describe('eth-log', function () {
   }
 
   test('encode and decode round trip', () => {
-    const logNode: Log = decode(logRLP)
+    const logNode: Log = logCodec.decode(logRLP)
     same(logNode, expectedLogNode)
-    const logEnc = encode(logNode)
+    const logEnc = logCodec.encode(logNode)
     same(logEnc, logRLP)
   })
 
