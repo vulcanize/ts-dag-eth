@@ -1,5 +1,5 @@
 import chai, { expect } from 'chai'
-import { encode, decode, code } from '../src'
+import { name } from '../src'
 import {
   isTrieExtensionNode,
   isTrieBranchNode,
@@ -15,7 +15,9 @@ import { packBranchNode, packTwoMemberNode } from '../../trie/src/helpers'
 import { addHexPrefix } from 'merkle-patricia-tree/dist/util/hex'
 import { rlp } from 'ethereumjs-util'
 import { nibblesToBuffer } from '../../util/src/util'
+import { codecs } from '../../index'
 
+const stateTrieCodec = codecs[name]
 const { assert } = chai
 const test = it
 const same = assert.deepStrictEqual
@@ -38,7 +40,7 @@ describe('eth-trie', function () {
   const extensionNodeBuffer = rlp.decode(extensionNodeRLP)
   assert.isTrue(Array.isArray(extensionNodeBuffer), 'extension node buffer is not an array')
   assert(extensionNodeBuffer.length === 2)
-  const expectedExtension = packTwoMemberNode(code, extensionNodeBuffer as any) as TrieNode
+  const expectedExtension = packTwoMemberNode(stateTrieCodec.code, extensionNodeBuffer as any) as TrieNode
   assert.isTrue(isTrieExtensionNode(expectedExtension), 'expected extension node does not satisfy extension node interface')
   const expectedExtensionNode = <TrieExtensionNode>expectedExtension
   const nodePathCopy = Object.assign([], expectedExtensionNode.PartialPath)
@@ -51,7 +53,7 @@ describe('eth-trie', function () {
   const contractLeafNodeBuffer = rlp.decode(contractLeafNodeRLP)
   assert(Array.isArray(contractLeafNodeBuffer), 'contract leaf node buffer is not an array')
   assert(contractLeafNodeBuffer.length === 2)
-  const expectedContractLeaf = packTwoMemberNode(code, contractLeafNodeBuffer as any) as TrieNode
+  const expectedContractLeaf = packTwoMemberNode(stateTrieCodec.code, contractLeafNodeBuffer as any) as TrieNode
   assert(isTrieLeafNode(expectedContractLeaf), 'expected contract leaf node does not satisfy leaf node interface')
   const expectedContractLeafNode = <TrieLeafNode>expectedContractLeaf
   const anyContractLeafNode: any = {
@@ -62,7 +64,7 @@ describe('eth-trie', function () {
   const eoaLeafNodeBuffer = rlp.decode(eoaLeafNodeRLP)
   assert(Array.isArray(eoaLeafNodeBuffer), 'contract leaf node buffer is not an array')
   assert(eoaLeafNodeBuffer.length === 2)
-  const expectedEOALeaf = packTwoMemberNode(code, eoaLeafNodeBuffer as any) as TrieNode
+  const expectedEOALeaf = packTwoMemberNode(stateTrieCodec.code, eoaLeafNodeBuffer as any) as TrieNode
   assert(isTrieLeafNode(expectedEOALeaf), 'expected EOA leaf node does not satisfy leaf node interface')
   const expectedEOALeafNode = <TrieLeafNode>expectedEOALeaf
   const anyEOALeafNode: any = {
@@ -73,7 +75,7 @@ describe('eth-trie', function () {
   const branchNodeBuffer = rlp.decode(branchNodeRLP)
   assert(Array.isArray(branchNodeBuffer), 'branch node buffer is not an array')
   assert(branchNodeBuffer.length === 17)
-  const expectedBranchNode = packBranchNode(code, branchNodeBuffer as any) as TrieNode
+  const expectedBranchNode = packBranchNode(stateTrieCodec.code, branchNodeBuffer as any) as TrieNode
   assert(isTrieBranchNode(expectedBranchNode), 'expected branch node does not satisfy branch node interface')
   const anyBranchNode: any = {
     Child0: branchNodeBuffer[0],
@@ -96,24 +98,24 @@ describe('eth-trie', function () {
   }
 
   test('encode and decode round trip', () => {
-    const extensionNode: TrieNode = decode(extensionNodeRLP)
+    const extensionNode: TrieNode = stateTrieCodec.decode(extensionNodeRLP)
     same(extensionNode, expectedExtensionNode)
-    const extensionNodeEnc = encode(extensionNode)
+    const extensionNodeEnc = stateTrieCodec.encode(extensionNode)
     same(extensionNodeEnc, extensionNodeRLP)
 
-    const contractLeafNode: TrieNode = decode(contractLeafNodeRLP)
+    const contractLeafNode: TrieNode = stateTrieCodec.decode(contractLeafNodeRLP)
     same(contractLeafNode, expectedContractLeafNode)
-    const contractLeafNodeEnc = encode(contractLeafNode)
+    const contractLeafNodeEnc = stateTrieCodec.encode(contractLeafNode)
     same(contractLeafNodeEnc, contractLeafNodeRLP)
 
-    const eoaLeafNode: TrieNode = decode(eoaLeafNodeRLP)
+    const eoaLeafNode: TrieNode = stateTrieCodec.decode(eoaLeafNodeRLP)
     same(eoaLeafNode, expectedEOALeafNode)
-    const eoaLeafNodeEnc = encode(eoaLeafNode)
+    const eoaLeafNodeEnc = stateTrieCodec.encode(eoaLeafNode)
     same(eoaLeafNodeEnc, eoaLeafNodeRLP)
 
-    const branchNode: TrieNode = decode(branchNodeRLP)
+    const branchNode: TrieNode = stateTrieCodec.decode(branchNodeRLP)
     same(branchNode, expectedBranchNode)
-    const branchNodeEnc = encode(branchNode)
+    const branchNodeEnc = stateTrieCodec.encode(branchNode)
     same(branchNodeEnc, branchNodeRLP)
   })
 

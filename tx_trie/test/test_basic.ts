@@ -1,5 +1,5 @@
 import chai, { expect } from 'chai'
-import { encode, decode, code } from '../src'
+import { name } from '../src'
 import {
   isTrieExtensionNode,
   isTrieBranchNode,
@@ -15,7 +15,9 @@ import { packBranchNode, packTwoMemberNode } from '../../trie/src/helpers'
 import { addHexPrefix } from 'merkle-patricia-tree/dist/util/hex'
 import { rlp } from 'ethereumjs-util'
 import { nibblesToBuffer } from '../../util/src/util'
+import { codecs } from '../../index'
 
+const txTrieCodec = codecs[name]
 const { assert } = chai
 const test = it
 const same = assert.deepStrictEqual
@@ -35,7 +37,7 @@ describe('eth-trie', function () {
   const extensionNodeBuffer = rlp.decode(extensionNodeRLP)
   assert.isTrue(Array.isArray(extensionNodeBuffer), 'extension node buffer is not an array')
   assert(extensionNodeBuffer.length === 2)
-  const expectedExtension = packTwoMemberNode(code, extensionNodeBuffer as any) as TrieNode
+  const expectedExtension = packTwoMemberNode(txTrieCodec.code, extensionNodeBuffer as any) as TrieNode
   assert.isTrue(isTrieExtensionNode(expectedExtension), 'expected extension node does not satisfy extension node interface')
   const expectedExtensionNode = <TrieExtensionNode>expectedExtension
   const nodePathCopy = Object.assign([], expectedExtensionNode.PartialPath)
@@ -48,7 +50,7 @@ describe('eth-trie', function () {
   const leafNodeBuffer = rlp.decode(leafNodeRLP)
   assert(Array.isArray(leafNodeBuffer), 'leaf node buffer is not an array')
   assert(leafNodeBuffer.length === 2)
-  const expectedLeaf = packTwoMemberNode(code, leafNodeBuffer as any) as TrieNode
+  const expectedLeaf = packTwoMemberNode(txTrieCodec.code, leafNodeBuffer as any) as TrieNode
   assert(isTrieLeafNode(expectedLeaf), 'expected leaf node does not satisfy leaf node interface')
   const expectedLeafNode = <TrieLeafNode>expectedLeaf
   const anyLeafNode: any = {
@@ -59,7 +61,7 @@ describe('eth-trie', function () {
   const branchNodeBuffer = rlp.decode(branchNodeRLP)
   assert(Array.isArray(branchNodeBuffer), 'branch node buffer is not an array')
   assert(branchNodeBuffer.length === 17)
-  const expectedBranchNode = packBranchNode(code, branchNodeBuffer as any) as TrieNode
+  const expectedBranchNode = packBranchNode(txTrieCodec.code, branchNodeBuffer as any) as TrieNode
   assert(isTrieBranchNode(expectedBranchNode), 'expected branch node does not satisfy branch node interface')
   const anyBranchNode: any = {
     Child0: branchNodeBuffer[0],
@@ -82,19 +84,19 @@ describe('eth-trie', function () {
   }
 
   test('encode and decode round trip', () => {
-    const extensionNode: TrieNode = decode(extensionNodeRLP)
+    const extensionNode: TrieNode = txTrieCodec.decode(extensionNodeRLP)
     same(extensionNode, expectedExtensionNode)
-    const extensionNodeEnc = encode(extensionNode)
+    const extensionNodeEnc = txTrieCodec.encode(extensionNode)
     same(extensionNodeEnc, extensionNodeRLP)
 
-    const leafNode: TrieNode = decode(leafNodeRLP)
+    const leafNode: TrieNode = txTrieCodec.decode(leafNodeRLP)
     same(leafNode, expectedLeaf)
-    const leafNodeEnc = encode(leafNode)
+    const leafNodeEnc = txTrieCodec.encode(leafNode)
     same(leafNodeEnc, leafNodeRLP)
 
-    const branchNode: TrieNode = decode(branchNodeRLP)
+    const branchNode: TrieNode = txTrieCodec.decode(branchNodeRLP)
     same(branchNode, expectedBranchNode)
-    const branchNodeEnc = encode(branchNode)
+    const branchNodeEnc = txTrieCodec.encode(branchNode)
     same(branchNodeEnc, branchNodeRLP)
   })
 

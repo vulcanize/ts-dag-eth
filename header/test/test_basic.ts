@@ -1,5 +1,5 @@
 import chai, { expect } from 'chai'
-import { encode, decode, code } from '../src/index'
+import { name } from '../src'
 import { pack } from '../src/helpers'
 import { prepare, validate } from '../src/util'
 import * as fs from 'fs'
@@ -11,7 +11,9 @@ import { code as txTrieCode } from '../../tx_trie/src'
 import { code as rctTrieCode } from '../../rct_trie/src'
 import { cidFromHash } from '../../util/src/util'
 import { checkEquality } from './util'
+import { codecs } from '../../index'
 
+const headerCodec = codecs[name]
 const { assert } = chai
 const test = it
 const same = assert.deepEqual
@@ -26,7 +28,7 @@ describe('eth-block', function () {
   const headerRLP = header.serialize()
   const expectedHeaderNode: Header = pack(header)
   const anyHeader: any = {
-    ParentCID: cidFromHash(code, header.parentHash).toString(),
+    ParentCID: cidFromHash(headerCodec.code, header.parentHash).toString(),
     UnclesCID: cidFromHash(unclesCode, header.uncleHash).toString(),
     Coinbase: header.coinbase.toString(),
     StateRootCID: cidFromHash(stateTrieCode, header.stateRoot).toString(),
@@ -45,9 +47,9 @@ describe('eth-block', function () {
   }
 
   test('encode and decode round trip', () => {
-    const headerNode: Header = decode(headerRLP)
+    const headerNode: Header = headerCodec.decode(headerRLP)
     same(headerNode, expectedHeaderNode)
-    const headerEnc = encode(headerNode)
+    const headerEnc = headerCodec.encode(headerNode)
     same(headerEnc, headerRLP)
   })
 
