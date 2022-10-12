@@ -11,7 +11,7 @@ import {
   TransactionFactory
 } from '@ethereumjs/tx'
 import { checkEquality } from './util'
-import { codecs } from '../../index'
+import { codecs } from '../../'
 
 const txCodec = codecs[name]
 const { assert } = chai

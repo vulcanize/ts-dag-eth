@@ -15,7 +15,7 @@ import { packBranchNode, packTwoMemberNode } from '../../trie/src/helpers'
 import { addHexPrefix } from 'merkle-patricia-tree/dist/util/hex'
 import { rlp } from 'ethereumjs-util'
 import { nibblesToBuffer } from '../../util/src/util'
-import { codecs } from '../../index'
+import { codecs } from '../../'
 
 const logTrieCodec = codecs[name]
 const { assert } = chai

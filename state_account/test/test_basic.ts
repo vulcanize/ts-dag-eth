@@ -7,7 +7,7 @@ import { Account as EthAccount } from 'ethereumjs-util/dist/account'
 import { cidFromHash } from '../../util/src/util'
 import { code as storageTrieCode } from '../../storage_trie/src'
 import { checkEquality } from './util'
-import { codecs } from '../../index'
+import { codecs } from '../../'
 
 const stateAccountCode = codecs[name]
 const { assert } = chai

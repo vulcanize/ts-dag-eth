@@ -6,7 +6,7 @@ import { AccessListReceipt, FeeMarketReceipt, LegacyReceipt, ReceiptFactory } fr
 import { pack } from '../src/helpers'
 import { checkEquality } from './util'
 import { prepare, validate } from '../src/util'
-import { codecs } from '../../index'
+import { codecs } from '../../'
 
 const rctCodec = codecs[name]
 const { assert } = chai

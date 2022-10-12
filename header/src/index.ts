@@ -1,5 +1,5 @@
 import { ByteView } from 'multiformats/codecs/interface'
-import { Header } from '../src/interface'
+import { Header } from './interface'
 import { BlockHeader } from '@ethereumjs/block'
 import { pack, unpack } from './helpers'
 import { CodecCode } from 'multicodec'
