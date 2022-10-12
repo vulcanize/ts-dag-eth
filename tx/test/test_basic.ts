@@ -1,5 +1,5 @@
 import chai, { expect } from 'chai'
-import { encode, decode } from '../src/index'
+import { name } from '../src'
 import { Transaction } from '../src/interface'
 import { prepare, validate } from '../src/util'
 import * as fs from 'fs'
@@ -11,7 +11,9 @@ import {
   TransactionFactory
 } from '@ethereumjs/tx'
 import { checkEquality } from './util'
+import { codecs } from '../../index'
 
+const txCodec = codecs[name]
 const { assert } = chai
 const test = it
 const same = assert.deepStrictEqual
@@ -84,19 +86,19 @@ describe('eth-tx', function () {
   }
 
   test('encode and decode round trip', () => {
-    const accessListTxNode: Transaction = decode(accessListTxRLP)
+    const accessListTxNode: Transaction = txCodec.decode(accessListTxRLP)
     same(accessListTxNode, expectedAccessListTx)
-    const accessListTxNodeEnc = encode(accessListTxNode)
+    const accessListTxNodeEnc = txCodec.encode(accessListTxNode)
     same(accessListTxNodeEnc, accessListTxRLP)
 
-    const dynamicFeeTxNode: Transaction = decode(dynamicFeeTxRLP)
+    const dynamicFeeTxNode: Transaction = txCodec.decode(dynamicFeeTxRLP)
     same(dynamicFeeTxNode, expectedDynamicFeeTx)
-    const dynamicFeeTxNodeEnc = encode(dynamicFeeTxNode)
+    const dynamicFeeTxNodeEnc = txCodec.encode(dynamicFeeTxNode)
     same(dynamicFeeTxNodeEnc, dynamicFeeTxRLP)
 
-    const legacyTxNode: Transaction = decode(legacyTxRLP)
+    const legacyTxNode: Transaction = txCodec.decode(legacyTxRLP)
     same(legacyTxNode, expectedLegacyTx)
-    const legacyTxNodeEnc = encode(legacyTxNode)
+    const legacyTxNodeEnc = txCodec.encode(legacyTxNode)
     same(legacyTxNodeEnc, legacyTxRLP)
   })
 

@@ -1,5 +1,5 @@
 import chai, { expect } from 'chai'
-import { encode, decode, code as unclesCode } from '../src/index'
+import { name } from '../src'
 import { pack } from '../../header/src/helpers'
 import { checkEquality } from '../../header/test/util'
 import { prepare, validate } from '../src/util'
@@ -13,7 +13,9 @@ import { code as rctTrieCode } from '../../rct_trie/src'
 import { cidFromHash } from '../../util/src/util'
 import { rlp } from 'ethereumjs-util'
 import { Header } from '../../header/src/interface'
+import { codecs } from '../../index'
 
+const unclesCodec = codecs[name]
 const { assert } = chai
 const test = it
 const same = assert.deepEqual
@@ -43,7 +45,7 @@ describe('eth-block-list', function () {
   const anyUncles: any = [
     {
       ParentCID: cidFromHash(headerCode, uncles[0].parentHash).toString(),
-      UnclesCID: cidFromHash(unclesCode, uncles[0].uncleHash).toString(),
+      UnclesCID: cidFromHash(unclesCodec.code, uncles[0].uncleHash).toString(),
       Coinbase: uncles[0].coinbase.toString(),
       StateRootCID: cidFromHash(stateTrieCode, uncles[0].stateRoot).toString(),
       TxRootCID: cidFromHash(txTrieCode, uncles[0].transactionsTrie).toString(),
@@ -61,7 +63,7 @@ describe('eth-block-list', function () {
     },
     {
       ParentCID: cidFromHash(headerCode, uncles[1].parentHash).toString(),
-      UnclesCID: cidFromHash(unclesCode, uncles[1].uncleHash).toString(),
+      UnclesCID: cidFromHash(unclesCodec.code, uncles[1].uncleHash).toString(),
       Coinbase: uncles[1].coinbase.toString(),
       StateRootCID: cidFromHash(stateTrieCode, uncles[1].stateRoot).toString(),
       TxRootCID: cidFromHash(txTrieCode, uncles[1].transactionsTrie).toString(),
@@ -80,9 +82,9 @@ describe('eth-block-list', function () {
   ]
 
   test('encode and decode round trip', () => {
-    const unclesNode: Uncles = decode(unclesRLP)
+    const unclesNode: Uncles = unclesCodec.decode(unclesRLP)
     same(unclesNode, expectedUnclesNode)
-    const unclesEnc = encode(unclesNode)
+    const unclesEnc = unclesCodec.encode(unclesNode)
     same(unclesEnc, unclesRLP)
   })
 

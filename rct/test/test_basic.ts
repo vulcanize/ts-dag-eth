@@ -1,12 +1,14 @@
 import chai, { expect } from 'chai'
-import { encode, decode } from '../src/index'
+import { name } from '../src'
 import { Receipt } from '../src/interface'
 import * as fs from 'fs'
 import { AccessListReceipt, FeeMarketReceipt, LegacyReceipt, ReceiptFactory } from '../src/types'
-import { pack } from '../../rct/src/helpers'
-import { checkEquality } from '../test/util'
+import { pack } from '../src/helpers'
+import { checkEquality } from './util'
 import { prepare, validate } from '../src/util'
+import { codecs } from '../../index'
 
+const rctCodec = codecs[name]
 const { assert } = chai
 const test = it
 const same = assert.deepStrictEqual
@@ -58,19 +60,19 @@ describe('eth-tx-receipt', function () {
   }
 
   test('encode and decode round trip', () => {
-    const accessListRctNode: Receipt = decode(accessListRctRLP)
+    const accessListRctNode: Receipt = rctCodec.decode(accessListRctRLP)
     same(accessListRctNode, expectedAccessListRct)
-    const accessListRctNodeEnc = encode(accessListRctNode)
+    const accessListRctNodeEnc = rctCodec.encode(accessListRctNode)
     same(accessListRctNodeEnc, accessListRctRLP)
 
-    const dynamicFeeRctNode: Receipt = decode(dynamicFeeRctRLP)
+    const dynamicFeeRctNode: Receipt = rctCodec.decode(dynamicFeeRctRLP)
     same(dynamicFeeRctNode, expectedDynamicFeeRct)
-    const dynamicFeeRctNodeEnc = encode(dynamicFeeRctNode)
+    const dynamicFeeRctNodeEnc = rctCodec.encode(dynamicFeeRctNode)
     same(dynamicFeeRctNodeEnc, dynamicFeeRctRLP)
 
-    const legacyRctNode: Receipt = decode(legacyRctRLP)
+    const legacyRctNode: Receipt = rctCodec.decode(legacyRctRLP)
     same(legacyRctNode, expectedLegacyRct)
-    const legacyRctNodeEnc = encode(legacyRctNode)
+    const legacyRctNodeEnc = rctCodec.encode(legacyRctNode)
     same(legacyRctNodeEnc, legacyRctRLP)
   })
 

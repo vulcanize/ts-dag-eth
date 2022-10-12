@@ -1,5 +1,5 @@
 import chai, { expect } from 'chai'
-import { encode, decode } from '../src/index'
+import { encode, decode } from '../src'
 import {
   isTrieExtensionNode,
   isTrieBranchNode,

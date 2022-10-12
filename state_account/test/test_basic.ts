@@ -1,5 +1,5 @@
 import chai, { expect } from 'chai'
-import { encode, decode, rawCode } from '../src/index'
+import { name, rawCode } from '../src'
 import { prepare, validate } from '../src/util'
 import * as fs from 'fs'
 import { Account } from '../src/interface'
@@ -7,7 +7,9 @@ import { Account as EthAccount } from 'ethereumjs-util/dist/account'
 import { cidFromHash } from '../../util/src/util'
 import { code as storageTrieCode } from '../../storage_trie/src'
 import { checkEquality } from './util'
+import { codecs } from '../../index'
 
+const stateAccountCode = codecs[name]
 const { assert } = chai
 const test = it
 const same = assert.deepEqual
@@ -32,9 +34,9 @@ describe('eth-account-snapshot', function () {
   }
 
   test('encode and decode round trip', () => {
-    const accountNode: Account = decode(accountRLP)
+    const accountNode: Account = stateAccountCode.decode(accountRLP)
     same(accountNode, expectedAccountNode)
-    const accountEnc = encode(accountNode)
+    const accountEnc = stateAccountCode.encode(accountNode)
     same(accountEnc, accountRLP)
   })
 
