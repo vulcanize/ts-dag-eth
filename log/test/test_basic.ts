@@ -6,7 +6,7 @@ import { prepare, validate } from '../src/util'
 import * as fs from 'fs'
 import { rlp } from 'ethereumjs-util'
 import { checkEquality } from './util'
-import { codecs } from '../../index'
+import { codecs } from '../../'
 
 const logCodec = codecs[name]
 const { assert } = chai

@@ -13,7 +13,7 @@ import { code as rctTrieCode } from '../../rct_trie/src'
 import { cidFromHash } from '../../util/src/util'
 import { rlp } from 'ethereumjs-util'
 import { Header } from '../../header/src/interface'
-import { codecs } from '../../index'
+import { codecs } from '../../'
 
 const unclesCodec = codecs[name]
 const { assert } = chai

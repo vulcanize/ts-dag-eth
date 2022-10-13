@@ -11,7 +11,7 @@ import { code as txTrieCode } from '../../tx_trie/src'
 import { code as rctTrieCode } from '../../rct_trie/src'
 import { cidFromHash } from '../../util/src/util'
 import { checkEquality } from './util'
-import { codecs } from '../../index'
+import { codecs } from '../../'
 
 const headerCodec = codecs[name]
 const { assert } = chai

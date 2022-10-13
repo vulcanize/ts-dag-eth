@@ -1,5 +1,5 @@
 import { ByteView } from 'multiformats/codecs/interface'
-import { Transaction } from '../src/interface'
+import { Transaction } from './interface'
 import { TransactionFactory } from '@ethereumjs/tx'
 import { pack, unpack } from './helpers'
 import { CodecCode } from 'multicodec'

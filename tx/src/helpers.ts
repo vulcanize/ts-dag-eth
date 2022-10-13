@@ -1,4 +1,4 @@
-import { Transaction } from '../src/interface'
+import { Transaction } from './interface'
 import {
   TxData,
   Transaction as LegacyTransaction,
