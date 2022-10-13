@@ -18,3 +18,10 @@ export const codecs = [dagEthHeader, dagEthLog, dagEthLogTrie, dagEthRct, dagEth
     acc[val.name] = val
     return acc
   }, {})
+
+export const codecsByCode = [dagEthHeader, dagEthLog, dagEthLogTrie, dagEthRct, dagEthRctTrie, dagStateAccount,
+  dagEthStateTrie, dagEthStorageTrie, dagEthTx, dagEthTxTrie, dagEthUncles].reduce<Record<CodecCode, BlockCodec<CodecCode,
+  any>>>((acc, val) => {
+    acc[val.code] = val
+    return acc
+  }, <Record<CodecCode, BlockCodec<CodecCode, any>>>{})
