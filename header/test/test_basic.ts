@@ -11,9 +11,10 @@ import { code as txTrieCode } from '../../tx_trie/src'
 import { code as rctTrieCode } from '../../rct_trie/src'
 import { cidFromHash } from '../../util/src/util'
 import { checkEquality } from './util'
-import { codecs } from '../../'
+import { codecs, codecsByCode } from '../../'
 
 const headerCodec = codecs[name]
+const headerCodecByCode = codecsByCode[headerCodec.code]
 const { assert } = chai
 const test = it
 const same = assert.deepEqual
@@ -49,7 +50,7 @@ describe('eth-block', function () {
   test('encode and decode round trip', () => {
     const headerNode: Header = headerCodec.decode(headerRLP)
     same(headerNode, expectedHeaderNode)
-    const headerEnc = headerCodec.encode(headerNode)
+    const headerEnc = headerCodecByCode.encode(headerNode)
     same(headerEnc, headerRLP)
   })
 
