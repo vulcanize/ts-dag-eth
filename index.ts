@@ -14,14 +14,14 @@ import { CodecCode } from 'multicodec'
 
 export const codecs = [dagEthHeader, dagEthLog, dagEthLogTrie, dagEthRct, dagEthRctTrie, dagStateAccount,
   dagEthStateTrie, dagEthStorageTrie, dagEthTx, dagEthTxTrie, dagEthUncles].reduce<Record<string, BlockCodec<CodecCode,
-  any>>>((acc, val) => {
+  any>>>((acc: Record<string, BlockCodec<CodecCode, any>>, val: BlockCodec<CodecCode, any>) => {
     acc[val.name] = val
     return acc
-  }, {})
+  }, <Record<string, BlockCodec<CodecCode, any>>>{})
 
 export const codecsByCode = [dagEthHeader, dagEthLog, dagEthLogTrie, dagEthRct, dagEthRctTrie, dagStateAccount,
   dagEthStateTrie, dagEthStorageTrie, dagEthTx, dagEthTxTrie, dagEthUncles].reduce<Record<CodecCode, BlockCodec<CodecCode,
-  any>>>((acc, val) => {
+  any>>>((acc: Record<CodecCode, BlockCodec<CodecCode, any>>, val: BlockCodec<CodecCode, any>) => {
     acc[val.code] = val
     return acc
   }, <Record<CodecCode, BlockCodec<CodecCode, any>>>{})

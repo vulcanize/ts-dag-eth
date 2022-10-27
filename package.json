@@ -2,9 +2,11 @@
   "name": "@vulcanize/dag-eth",
   "version": "1.0.0",
   "description": "Typescript implementations of the Ethereum DAG for IPLD",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "test": "mocha -r ts-node/register 'tests/**/*.ts'"
+    "test": "mocha -r ts-node/register 'tests/**/*.ts'",
+    "prepublish": "tsc"
   },
   "repository": {
     "type": "git",
