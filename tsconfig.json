@@ -21,18 +21,19 @@
     "moduleResolution": "node",
     "declaration": true,
     "declarationMap": true,
-    "outDir": "types",
+    "outDir": "dist",
     "skipLibCheck": true,
     "stripInternal": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
-    "emitDeclarationOnly": true
+    "baseUrl": "."
   },
   "include": [
-    "index.js"
+    "/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist",
+    "**/**test"
   ],
   "compileOnSave": false
 }
