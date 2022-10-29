@@ -3,7 +3,7 @@ A TypeScript implementation of the codecs for [Ethereum IPLD types](https://gith
 for use with [multiformats](https://github.com/multiformats/js-multiformats).
 
 ## Testing
-Run `npm test` or `yarn test` from the root repo to run all the unit tests referenced from [tests/index.ts](test/index.ts)
+After running `npm install` or `npm ci`, run `npm test` or `yarn test` from the root repo to run all the unit tests referenced from [test/index.ts](test/index.ts)
 
 ## Usage
 The top-level index contains a mapping that aggregates all the ethereum codecs:
