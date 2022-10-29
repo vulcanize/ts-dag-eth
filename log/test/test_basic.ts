@@ -1,4 +1,4 @@
-import chai, { expect } from 'chai'
+import { assert, expect } from 'chai'
 import { name } from '../src'
 import { LogBuffer, Log } from '../src/interface'
 import { convertLogBufferToLog } from '../src/helpers'
@@ -9,7 +9,6 @@ import { checkEquality } from './util'
 import { codecs } from '../../'
 
 const logCodec = codecs[name]
-const { assert } = chai
 const test = it
 const same = assert.deepStrictEqual
 

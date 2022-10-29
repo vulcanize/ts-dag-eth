@@ -1,4 +1,4 @@
-import chai, { expect } from 'chai'
+import { assert, expect } from 'chai'
 import { name } from '../src'
 import { pack } from '../src/helpers'
 import { prepare, validate } from '../src/util'
@@ -15,7 +15,6 @@ import { codecs, codecsByCode } from '../../'
 
 const headerCodec = codecs[name]
 const headerCodecByCode = codecsByCode[headerCodec.code]
-const { assert } = chai
 const test = it
 const same = assert.deepEqual
 

@@ -1,9 +1,7 @@
-import chai from 'chai'
+import { assert } from 'chai'
 import { Account } from '../src/interface'
 import { CID } from 'multiformats/cid'
 import BN from 'bn.js'
-
-const { assert } = chai
 
 export function checkEquality (expected: Account, got: Account) {
   for (const [k, v] of Object.entries(expected)) {

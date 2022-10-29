@@ -1,4 +1,4 @@
-import chai, { expect } from 'chai'
+import { assert, expect } from 'chai'
 import { name } from '../src'
 import { Receipt } from '../src/interface'
 import * as fs from 'fs'
@@ -9,7 +9,6 @@ import { prepare, validate } from '../src/util'
 import { codecs } from '../../'
 
 const rctCodec = codecs[name]
-const { assert } = chai
 const test = it
 const same = assert.deepStrictEqual
 

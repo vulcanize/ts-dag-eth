@@ -1,9 +1,7 @@
-import chai from 'chai'
+import { assert } from 'chai'
 import { Transaction } from '../src/interface'
 import { Address } from 'ethereumjs-util'
 import BN from 'bn.js'
-
-const { assert } = chai
 
 export function checkEquality (expected: Transaction, got: Transaction) {
   for (const [k, v] of Object.entries(expected)) {

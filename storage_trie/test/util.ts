@@ -1,4 +1,4 @@
-import chai from 'chai'
+import { assert } from 'chai'
 import {
   isTrieExtensionNode,
   isTrieBranchNode,
@@ -9,8 +9,6 @@ import {
   TrieNode
 } from '../src/interface'
 import { CID } from 'multiformats/cid'
-
-const { assert } = chai
 
 export function checkEquality (expected: TrieNode, got: TrieNode) {
   if (isTrieBranchNode(got)) {

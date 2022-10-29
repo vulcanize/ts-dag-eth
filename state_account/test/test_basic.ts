@@ -1,4 +1,4 @@
-import chai, { expect } from 'chai'
+import { assert, expect } from 'chai'
 import { name, rawCode } from '../src'
 import { prepare, validate } from '../src/util'
 import * as fs from 'fs'
@@ -10,7 +10,6 @@ import { checkEquality } from './util'
 import { codecs } from '../../'
 
 const stateAccountCode = codecs[name]
-const { assert } = chai
 const test = it
 const same = assert.deepEqual
 
