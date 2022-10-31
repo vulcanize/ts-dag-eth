@@ -3,7 +3,7 @@ import { ByteView } from 'multiformats/codecs/interface'
 import { encode as trieEncode, decode as trieDecode } from '../../trie/src/index'
 import { CodecCode } from 'multicodec'
 
-export const name = 'eth-reciept-log-trie'
+export const name = 'eth-receipt-log-trie'
 export const code: CodecCode = 0x99
 
 export function encode (node: TrieNode): ByteView<TrieNode> {
