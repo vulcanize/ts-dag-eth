@@ -1,4 +1,4 @@
-import chai, { expect } from 'chai'
+import { assert, expect } from 'chai'
 import { name } from '../src'
 import { Transaction } from '../src/interface'
 import { prepare, validate } from '../src/util'
@@ -14,7 +14,6 @@ import { checkEquality } from './util'
 import { codecs } from '../../'
 
 const txCodec = codecs[name]
-const { assert } = chai
 const test = it
 const same = assert.deepStrictEqual
 

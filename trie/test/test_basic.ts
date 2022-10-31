@@ -1,4 +1,4 @@
-import chai, { expect } from 'chai'
+import { assert, expect } from 'chai'
 import { encode, decode } from '../src'
 import {
   isTrieExtensionNode,
@@ -18,7 +18,6 @@ import { rlp } from 'ethereumjs-util'
 import { CID } from 'multiformats/cid'
 import { nibblesToBuffer } from '../../util/src/util'
 
-const { assert } = chai
 const test = it
 const same = assert.deepStrictEqual
 

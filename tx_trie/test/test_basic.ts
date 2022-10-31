@@ -1,4 +1,4 @@
-import chai, { expect } from 'chai'
+import { assert, expect } from 'chai'
 import { name } from '../src'
 import {
   isTrieExtensionNode,
@@ -18,7 +18,6 @@ import { nibblesToBuffer } from '../../util/src/util'
 import { codecs } from '../../'
 
 const txTrieCodec = codecs[name]
-const { assert } = chai
 const test = it
 const same = assert.deepStrictEqual
 

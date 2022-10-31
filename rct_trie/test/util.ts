@@ -1,4 +1,4 @@
-import chai from 'chai'
+import { assert } from 'chai'
 import {
   isTrieExtensionNode,
   isTrieBranchNode,
@@ -11,8 +11,6 @@ import {
 import { checkEquality as checkRctEquality } from '../../rct/test/util'
 import { CID } from 'multiformats/cid'
 import { isReceipt } from '../../rct/src/interface'
-
-const { assert } = chai
 
 export function checkEquality (expected: TrieNode, got: TrieNode) {
   if (isTrieBranchNode(got)) {
