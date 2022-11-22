@@ -36,7 +36,7 @@ export function checkEquality (expected: TrieNode, got: TrieNode) {
         } else if (v == null) {
           assert(actualVal == null, `actual ${k}: ${actualVal} does not equal expected: ${v}`)
         } else {
-          assert.equal(got[k as keyof TrieBranchNode], v, `actual ${k}: ${got[k as keyof TrieBranchNode]} does not equal expected: ${v}`)
+          assert.deepEqual(got[k as keyof TrieBranchNode], v, `actual ${k}: ${got[k as keyof TrieBranchNode]} does not equal expected: ${v}`)
         }
       } else {
         throw new Error(`key ${k} found in expected TrieBranchNode is not found in the prepared TrieBranchNode`)
@@ -65,7 +65,7 @@ export function checkEquality (expected: TrieNode, got: TrieNode) {
             throw new TypeError(`key ${k} expected to be of type Buffer`)
           }
         } else {
-          assert.equal(got[k as keyof TrieLeafNode], v, `actual ${k}: ${got[k as keyof TrieLeafNode]} does not equal expected: ${v}`)
+          assert.deepEqual(got[k as keyof TrieLeafNode], v, `actual ${k}: ${got[k as keyof TrieLeafNode]} does not equal expected: ${v}`)
         }
       } else {
         throw new Error(`key ${k} found in expected TrieLeafNode is not found in the prepared TrieLeafNode`)
@@ -94,7 +94,7 @@ export function checkEquality (expected: TrieNode, got: TrieNode) {
             throw new TypeError(`key ${k} expected to be of type Buffer`)
           }
         } else {
-          assert.equal(got[k as keyof TrieExtensionNode], v, `actual ${k}: ${got[k as keyof TrieExtensionNode]} does not equal expected: ${v}`)
+          assert.deepEqual(got[k as keyof TrieExtensionNode], v, `actual ${k}: ${got[k as keyof TrieExtensionNode]} does not equal expected: ${v}`)
         }
       } else {
         throw new Error(`key ${k} found in expected TrieExtensionNode is not found in the prepared TrieExtensionNode`)

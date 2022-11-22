@@ -28,6 +28,7 @@ import { decode as decodeAccount } from '../../state_account/src/index'
 import { Nibbles } from 'merkle-patricia-tree/dist/trieNode'
 import { CodecCode } from 'multicodec'
 import {
+  compactToHex,
   bufferToNibbles,
   cidFromHash,
   compactStrToNibbles,
@@ -59,7 +60,7 @@ function preparePartialPath (node: any): Nibbles {
       }
     }
   } else if (node.PartialPath instanceof Uint8Array || node.PartialPath instanceof Buffer) {
-    if (node.PartialPath.length > 33) {
+    if (node.PartialPath.length > 33) { // unless array is longer than 33 bytes we assume it is still in compact format
       partialPath = [...node.PartialPath]
     } else {
       partialPath = bufferToNibbles(node.PartialPath)
@@ -114,6 +115,11 @@ export function prepareExtensionNode (node: any): TrieExtensionNode {
 function prepareBranchChild (code: CodecCode, childNode: any): Child | null {
   if (childNode == null) { // should we attempt to prepare embedded children that are still encoded as raw Buffer or []Buffer
     return null
+  } else if (Array.isArray(childNode) && (childNode.length === 2)) {
+    return prepareLeafNode(code, {
+      PartialPath: childNode[0],
+      Value: childNode[1]
+    })
   } else if (isTrieLeafNode(childNode)) {
     return prepareLeafNode(code, childNode)
   } else if (CID.isCID(childNode)) {

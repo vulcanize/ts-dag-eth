@@ -95,6 +95,7 @@ describe('eth-trie', function () {
 
     const branchNode: TrieNode = storageTrieCodec.decode(branchNodeRLP)
     same(branchNode, expectedBranchNode)
+
     const branchNodeEnc = storageTrieCodec.encode(branchNode)
     same(branchNodeEnc, branchNodeRLP)
   })
