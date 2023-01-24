@@ -47,17 +47,13 @@ export function unpackValue (value: Value | null): Buffer | null {
   return null
 }
 
-export function unpackChild (child: Child | null): Buffer | Buffer[] | null {
+export function unpackChild (child: Child | null): Buffer | TrieLeafNodeValuesArray | null {
   if (!(child === null)) {
     if (CID.isCID(child)) {
       return hashFromCID(child)
     }
     if (isTrieLeafNode(child)) {
-      const val = unpackValue(child.Value)
-      if (val == null) {
-        throw Error('leaf node value cannot be null or undefined')
-      }
-      return [nibblesToBuffer(child.PartialPath), val]
+      return unpackLeafNode(child)
     }
   }
   return null
@@ -126,7 +122,7 @@ export function packTwoMemberNode (code: CodecCode, raw: Buffer[]): TrieLeafNode
   }
 }
 
-export function packLeafNode (code: CodecCode, raw: Buffer[]): TrieLeafNode {
+export function packLeafNode (code: CodecCode, raw: TrieLeafNodeValuesArray): TrieLeafNode {
   const nibbles = bufferToNibbles(raw[0]) // convert the bytes to nibbles
   if (isTerminator(nibbles)) {
     nibbles.push(16) // add the terminator flag to the end
@@ -172,7 +168,7 @@ export function packValue (code: CodecCode, value: Buffer | null): Value | null 
   }
 }
 
-export function packChild (code: CodecCode, raw: Buffer | Buffer[] | null): Child | null {
+export function packChild (code: CodecCode, raw: Buffer | TrieLeafNodeValuesArray | null): Child | null {
   if (raw == null) {
     return null
   }
@@ -185,6 +181,9 @@ export function packChild (code: CodecCode, raw: Buffer | Buffer[] | null): Chil
   }
   if (Buffer.from('').equals(raw)) {
     return null
+  }
+  if (raw.length !== 32) {
+    throw new Error(`leaf node child reference should be 32 bytes in length but is ${raw.length}`)
   }
   return cidFromHash(code, raw)
 }

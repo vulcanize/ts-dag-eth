@@ -27,22 +27,22 @@ export interface TrieBranchNode {
 }
 
 export type TrieBranchNodeValuesArray = [
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
-  Buffer | Buffer[] | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
+  Buffer | TrieLeafNodeValuesArray | null,
   Buffer | null,
 ]
 
@@ -102,7 +102,7 @@ export interface TrieLeafNode {
 
 export type TrieLeafNodeValuesArray = [
   Buffer,
-  Buffer | Buffer[],
+  Buffer,
 ]
 
 export const leafNodeProperties = [

@@ -3,6 +3,7 @@ import { create } from 'multiformats/hashes/digest'
 import { CodecCode } from 'multicodec'
 import { keccak256, randomHex } from 'web3-utils'
 import { Nibbles } from 'merkle-patricia-tree/dist/trieNode'
+import { isTerminator, removeHexPrefix } from 'merkle-patricia-tree/dist/util/hex'
 const toBuffer = require('typedarray-to-buffer')
 
 const version = 1
@@ -75,6 +76,14 @@ export function arrayToNumber (u8: Uint8Array): number {
 
 export function hasOnlyProperties (node: any, properties: string[]): boolean {
   return !Object.keys(node).some((p) => !properties.includes(p))
+}
+
+export function compactToHex (compact: Buffer): number[] {
+  const nibbles = bufferToNibbles(compact)
+  if (isTerminator(nibbles)) {
+    nibbles.push(16)
+  }
+  return removeHexPrefix(nibbles)
 }
 
 export function compactStrToNibbles (key: string): Nibbles {
