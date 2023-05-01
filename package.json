@@ -1,6 +1,6 @@
 {
   "name": "@vulcanize/dag-eth",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Typescript implementations of the Ethereum DAG for IPLD",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
